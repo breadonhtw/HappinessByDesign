@@ -158,8 +158,10 @@ function SwipeCard({ scenario, onChoice }) {
   const rotation = offset * 0.06;
   const leftGlow = Math.max(0, Math.min(1, -offset / threshold));
   const rightGlow = Math.max(0, Math.min(1, offset / threshold));
-  const translateX = exitDir === "right" ? 500 : exitDir === "left" ? -500 : offset;
-  const exitRot = exitDir === "right" ? 15 : exitDir === "left" ? -15 : rotation;
+  const translateX =
+    exitDir === "right" ? 500 : exitDir === "left" ? -500 : offset;
+  const exitRot =
+    exitDir === "right" ? 15 : exitDir === "left" ? -15 : rotation;
 
   return (
     <div
@@ -216,8 +218,18 @@ function SwipeCard({ scenario, onChoice }) {
           pointerEvents: "none",
         }}
       >
-        <div style={{ fontSize: 28, marginBottom: 2 }}>{scenario.optionB.emoji}</div>
-        <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 12, color: "#c45a3c", fontWeight: 700, width: 56 }}>
+        <div style={{ fontSize: 28, marginBottom: 2 }}>
+          {scenario.optionB.emoji}
+        </div>
+        <div
+          style={{
+            fontFamily: "'Chillax', sans-serif",
+            fontSize: 12,
+            color: "#c45a3c",
+            fontWeight: 700,
+            width: 56,
+          }}
+        >
           {scenario.optionB.label}
         </div>
       </div>
@@ -234,8 +246,18 @@ function SwipeCard({ scenario, onChoice }) {
           pointerEvents: "none",
         }}
       >
-        <div style={{ fontSize: 28, marginBottom: 2 }}>{scenario.optionA.emoji}</div>
-        <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 12, color: "#6b8f5e", fontWeight: 700, width: 56 }}>
+        <div style={{ fontSize: 28, marginBottom: 2 }}>
+          {scenario.optionA.emoji}
+        </div>
+        <div
+          style={{
+            fontFamily: "'Chillax', sans-serif",
+            fontSize: 12,
+            color: "#6b8f5e",
+            fontWeight: 700,
+            width: 56,
+          }}
+        >
           {scenario.optionA.label}
         </div>
       </div>
@@ -253,7 +275,9 @@ function SwipeCard({ scenario, onChoice }) {
           width: "86%",
           maxWidth: 360,
           transform: `translateX(${translateX}px) rotate(${exitRot}deg)`,
-          transition: isDragging ? "none" : "all 0.45s cubic-bezier(0.2, 0.8, 0.2, 1)",
+          transition: isDragging
+            ? "none"
+            : "all 0.45s cubic-bezier(0.2, 0.8, 0.2, 1)",
           opacity: exitDir ? 0 : 1,
           cursor: isDragging ? "grabbing" : "grab",
           userSelect: "none",
@@ -305,7 +329,14 @@ function SwipeCard({ scenario, onChoice }) {
           </div>
 
           {/* Divider */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "0 20px 20px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              margin: "0 20px 20px",
+            }}
+          >
             <div style={{ flex: 1, height: 1, background: "#e8ddd0" }} />
             <div style={{ fontSize: 14, color: "#d4c4a8" }}>✦</div>
             <div style={{ flex: 1, height: 1, background: "#e8ddd0" }} />
@@ -338,12 +369,29 @@ function SwipeCard({ scenario, onChoice }) {
                 transition: isDragging ? "none" : "all 0.3s",
               }}
             >
-              <div style={{ fontSize: 24, flexShrink: 0 }}>{scenario.optionA.emoji}</div>
+              <div style={{ fontSize: 24, flexShrink: 0 }}>
+                {scenario.optionA.emoji}
+              </div>
               <div>
-                <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 13, color: scenario.optionA.color, fontWeight: 700, marginBottom: 1 }}>
+                <div
+                  style={{
+                    fontFamily: "'Chillax', sans-serif",
+                    fontSize: 13,
+                    color: scenario.optionA.color,
+                    fontWeight: 700,
+                    marginBottom: 1,
+                  }}
+                >
                   Option A — Swipe right →
                 </div>
-                <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 14, color: "#4a3f35", lineHeight: 1.5 }}>
+                <div
+                  style={{
+                    fontFamily: "'Chillax', sans-serif",
+                    fontSize: 14,
+                    color: "#4a3f35",
+                    lineHeight: 1.5,
+                  }}
+                >
                   {scenario.optionA.short}
                 </div>
               </div>
@@ -360,12 +408,29 @@ function SwipeCard({ scenario, onChoice }) {
                 transition: isDragging ? "none" : "all 0.3s",
               }}
             >
-              <div style={{ fontSize: 24, flexShrink: 0 }}>{scenario.optionB.emoji}</div>
+              <div style={{ fontSize: 24, flexShrink: 0 }}>
+                {scenario.optionB.emoji}
+              </div>
               <div>
-                <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 13, color: scenario.optionB.color, fontWeight: 700, marginBottom: 1 }}>
+                <div
+                  style={{
+                    fontFamily: "'Chillax', sans-serif",
+                    fontSize: 13,
+                    color: scenario.optionB.color,
+                    fontWeight: 700,
+                    marginBottom: 1,
+                  }}
+                >
                   ← Swipe left — Option B
                 </div>
-                <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 14, color: "#4a3f35", lineHeight: 1.5 }}>
+                <div
+                  style={{
+                    fontFamily: "'Chillax', sans-serif",
+                    fontSize: 14,
+                    color: "#4a3f35",
+                    lineHeight: 1.5,
+                  }}
+                >
                   {scenario.optionB.short}
                 </div>
               </div>
@@ -399,7 +464,15 @@ function AnimatedBar({ percentage, color, delay = 0 }) {
     return () => clearTimeout(t);
   }, [percentage, delay]);
   return (
-    <div style={{ height: 36, background: "#f0e6d8", borderRadius: 18, overflow: "hidden", position: "relative" }}>
+    <div
+      style={{
+        height: 36,
+        background: "#f0e6d8",
+        borderRadius: 18,
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
       <div
         style={{
           height: "100%",
@@ -414,7 +487,14 @@ function AnimatedBar({ percentage, color, delay = 0 }) {
         }}
       >
         {width > 18 && (
-          <span style={{ fontFamily: "'Chillax', sans-serif", fontSize: 16, color: "#fff", fontWeight: 700 }}>
+          <span
+            style={{
+              fontFamily: "'Chillax', sans-serif",
+              fontSize: 16,
+              color: "#fff",
+              fontWeight: 700,
+            }}
+          >
             {percentage}%
           </span>
         )}
@@ -452,7 +532,14 @@ function EvidenceCard({ option, evidence, isOpen, onToggle }) {
         cursor: "pointer",
       }}
     >
-      <div style={{ padding: "16px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div
+        style={{
+          padding: "16px 18px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div
             style={{
@@ -470,10 +557,24 @@ function EvidenceCard({ option, evidence, isOpen, onToggle }) {
             {option.emoji}
           </div>
           <div>
-            <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 16, color: option.color, fontWeight: 700 }}>
+            <div
+              style={{
+                fontFamily: "'Chillax', sans-serif",
+                fontSize: 16,
+                color: option.color,
+                fontWeight: 700,
+              }}
+            >
               {option.label}
             </div>
-            <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 11, color: "#b8a089", fontStyle: "italic" }}>
+            <div
+              style={{
+                fontFamily: "'Chillax', sans-serif",
+                fontSize: 11,
+                color: "#b8a089",
+                fontStyle: "italic",
+              }}
+            >
               Tap to {isOpen ? "collapse" : "reveal the research"}
             </div>
           </div>
@@ -512,7 +613,13 @@ function EvidenceCard({ option, evidence, isOpen, onToggle }) {
         }}
       >
         <div style={{ padding: "0 18px 18px" }}>
-          <div style={{ height: 1, background: `${option.color}33`, marginBottom: 14 }} />
+          <div
+            style={{
+              height: 1,
+              background: `${option.color}33`,
+              marginBottom: 14,
+            }}
+          />
           <div
             style={{
               fontFamily: "'Sigmar', cursive",
@@ -572,10 +679,12 @@ function RevealFlow({ scenario, choice }) {
   }, []);
 
   const total = (scenario.votes.a || 0) + (scenario.votes.b || 0);
-  const pctA = total > 0 ? Math.round(((scenario.votes.a || 0) / total) * 100) : 50;
+  const pctA =
+    total > 0 ? Math.round(((scenario.votes.a || 0) / total) * 100) : 50;
   const pctB = total > 0 ? 100 - pctA : 50;
   const chosen = choice === "a" ? scenario.optionA : scenario.optionB;
-  const chosenCount = choice === "a" ? (scenario.votes.a || 0) : (scenario.votes.b || 0);
+  const chosenCount =
+    Math.max(0, (choice === "a" ? scenario.votes.a || 0 : scenario.votes.b || 0) - 1);
 
   return (
     <div style={{ padding: "0 20px" }}>
@@ -645,33 +754,87 @@ function RevealFlow({ scenario, choice }) {
         </div>
 
         <div style={{ marginBottom: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 6,
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 18 }}>{scenario.optionA.emoji}</span>
-              <span style={{ fontFamily: "'Chillax', sans-serif", fontSize: 15, color: scenario.optionA.color, fontWeight: 700 }}>
+              <span
+                style={{
+                  fontFamily: "'Chillax', sans-serif",
+                  fontSize: 15,
+                  color: scenario.optionA.color,
+                  fontWeight: 700,
+                }}
+              >
                 {scenario.optionA.label}
               </span>
             </div>
-            <span style={{ fontFamily: "'Chillax', sans-serif", fontSize: 14, color: "#8b7355", fontWeight: 600 }}>
+            <span
+              style={{
+                fontFamily: "'Chillax', sans-serif",
+                fontSize: 14,
+                color: "#8b7355",
+                fontWeight: 600,
+              }}
+            >
               {scenario.votes.a} votes
             </span>
           </div>
-          {phase >= 2 && <AnimatedBar percentage={pctA} color={scenario.optionA.color} delay={300} />}
+          {phase >= 2 && (
+            <AnimatedBar
+              percentage={pctA}
+              color={scenario.optionA.color}
+              delay={300}
+            />
+          )}
         </div>
 
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 6,
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 18 }}>{scenario.optionB.emoji}</span>
-              <span style={{ fontFamily: "'Chillax', sans-serif", fontSize: 15, color: scenario.optionB.color, fontWeight: 700 }}>
+              <span
+                style={{
+                  fontFamily: "'Chillax', sans-serif",
+                  fontSize: 15,
+                  color: scenario.optionB.color,
+                  fontWeight: 700,
+                }}
+              >
                 {scenario.optionB.label}
               </span>
             </div>
-            <span style={{ fontFamily: "'Chillax', sans-serif", fontSize: 14, color: "#8b7355", fontWeight: 600 }}>
+            <span
+              style={{
+                fontFamily: "'Chillax', sans-serif",
+                fontSize: 14,
+                color: "#8b7355",
+                fontWeight: 600,
+              }}
+            >
               {scenario.votes.b} votes
             </span>
           </div>
-          {phase >= 2 && <AnimatedBar percentage={pctB} color={scenario.optionB.color} delay={600} />}
+          {phase >= 2 && (
+            <AnimatedBar
+              percentage={pctB}
+              color={scenario.optionB.color}
+              delay={600}
+            />
+          )}
         </div>
       </div>
 
@@ -932,10 +1095,7 @@ export default function VotingPage() {
         href="https://fonts.googleapis.com/css2?family=Sigmar&display=swap"
         rel="stylesheet"
       />
-      <link
-        href="https://fonts.cdnfonts.com/css/chillax"
-        rel="stylesheet"
-      />
+      <link href="https://fonts.cdnfonts.com/css/chillax" rel="stylesheet" />
       <style>{`
         @keyframes pulse {
           0%, 100% { opacity: 0.5; }
@@ -982,7 +1142,14 @@ export default function VotingPage() {
       </div>
 
       {/* Progress bar */}
-      <div style={{ display: "flex", gap: 6, padding: "14px 40px 20px", justifyContent: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 6,
+          padding: "14px 40px 20px",
+          justifyContent: "center",
+        }}
+      >
         {[1, 2, 3].map((s) => (
           <button
             key={s}
@@ -1011,7 +1178,12 @@ export default function VotingPage() {
 
       {/* Next station button */}
       {choice && station < 3 && (
-        <div style={{ padding: "8px 20px", animation: "fadeUp 0.6s ease-out 4.5s both" }}>
+        <div
+          style={{
+            padding: "8px 20px",
+            animation: "fadeUp 0.6s ease-out 4.5s both",
+          }}
+        >
           <button
             onClick={() => goToStation(station + 1)}
             style={{
@@ -1036,7 +1208,12 @@ export default function VotingPage() {
 
       {/* Final station CTA */}
       {choice && station === 3 && (
-        <div style={{ padding: "8px 20px", animation: "fadeUp 0.6s ease-out 4.5s both" }}>
+        <div
+          style={{
+            padding: "8px 20px",
+            animation: "fadeUp 0.6s ease-out 4.5s both",
+          }}
+        >
           <div
             style={{
               background: "#fffbf5",
@@ -1068,7 +1245,8 @@ export default function VotingPage() {
                 margin: "0 0 4px",
               }}
             >
-              Pick up your Quest Card, leave a commitment on the reflection wall, and take the first step toward connection.
+              Pick up your Quest Card, leave a commitment on the reflection
+              wall, and take the first step toward connection.
             </p>
           </div>
         </div>
