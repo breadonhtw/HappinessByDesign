@@ -217,7 +217,7 @@ function SwipeCard({ scenario, onChoice }) {
         }}
       >
         <div style={{ fontSize: 28, marginBottom: 2 }}>{scenario.optionB.emoji}</div>
-        <div style={{ fontFamily: "'Caveat', cursive", fontSize: 12, color: "#c45a3c", fontWeight: 700, width: 56 }}>
+        <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 12, color: "#c45a3c", fontWeight: 700, width: 56 }}>
           {scenario.optionB.label}
         </div>
       </div>
@@ -235,7 +235,7 @@ function SwipeCard({ scenario, onChoice }) {
         }}
       >
         <div style={{ fontSize: 28, marginBottom: 2 }}>{scenario.optionA.emoji}</div>
-        <div style={{ fontFamily: "'Caveat', cursive", fontSize: 12, color: "#6b8f5e", fontWeight: 700, width: 56 }}>
+        <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 12, color: "#6b8f5e", fontWeight: 700, width: 56 }}>
           {scenario.optionA.label}
         </div>
       </div>
@@ -278,7 +278,7 @@ function SwipeCard({ scenario, onChoice }) {
                 padding: "4px 16px",
                 background: "#f5ead6",
                 borderRadius: 20,
-                fontFamily: "'Caveat', cursive",
+                fontFamily: "'Chillax', sans-serif",
                 fontSize: 12,
                 color: "#b8a089",
                 fontWeight: 600,
@@ -292,7 +292,7 @@ function SwipeCard({ scenario, onChoice }) {
 
           <div
             style={{
-              fontFamily: "'Instrument Serif', serif",
+              fontFamily: "'Sigmar', cursive",
               fontSize: 30,
               color: "#c45a3c",
               fontStyle: "italic",
@@ -313,7 +313,7 @@ function SwipeCard({ scenario, onChoice }) {
 
           <p
             style={{
-              fontFamily: "Georgia, serif",
+              fontFamily: "'Chillax', sans-serif",
               fontSize: 17,
               color: "#4a3f35",
               lineHeight: 1.75,
@@ -340,10 +340,10 @@ function SwipeCard({ scenario, onChoice }) {
             >
               <div style={{ fontSize: 24, flexShrink: 0 }}>{scenario.optionA.emoji}</div>
               <div>
-                <div style={{ fontFamily: "'Caveat', cursive", fontSize: 13, color: scenario.optionA.color, fontWeight: 700, marginBottom: 1 }}>
+                <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 13, color: scenario.optionA.color, fontWeight: 700, marginBottom: 1 }}>
                   Option A — Swipe right →
                 </div>
-                <div style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#4a3f35", lineHeight: 1.5 }}>
+                <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 14, color: "#4a3f35", lineHeight: 1.5 }}>
                   {scenario.optionA.short}
                 </div>
               </div>
@@ -362,10 +362,10 @@ function SwipeCard({ scenario, onChoice }) {
             >
               <div style={{ fontSize: 24, flexShrink: 0 }}>{scenario.optionB.emoji}</div>
               <div>
-                <div style={{ fontFamily: "'Caveat', cursive", fontSize: 13, color: scenario.optionB.color, fontWeight: 700, marginBottom: 1 }}>
+                <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 13, color: scenario.optionB.color, fontWeight: 700, marginBottom: 1 }}>
                   ← Swipe left — Option B
                 </div>
-                <div style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#4a3f35", lineHeight: 1.5 }}>
+                <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 14, color: "#4a3f35", lineHeight: 1.5 }}>
                   {scenario.optionB.short}
                 </div>
               </div>
@@ -379,7 +379,7 @@ function SwipeCard({ scenario, onChoice }) {
         style={{
           marginTop: 20,
           textAlign: "center",
-          fontFamily: "'Caveat', cursive",
+          fontFamily: "'Chillax', sans-serif",
           fontSize: 15,
           color: "#c4b49e",
           fontWeight: 600,
@@ -414,7 +414,7 @@ function AnimatedBar({ percentage, color, delay = 0 }) {
         }}
       >
         {width > 18 && (
-          <span style={{ fontFamily: "'Caveat', cursive", fontSize: 16, color: "#fff", fontWeight: 700 }}>
+          <span style={{ fontFamily: "'Chillax', sans-serif", fontSize: 16, color: "#fff", fontWeight: 700 }}>
             {percentage}%
           </span>
         )}
@@ -426,7 +426,7 @@ function AnimatedBar({ percentage, color, delay = 0 }) {
             left: `calc(${width}% + 8px)`,
             top: "50%",
             transform: "translateY(-50%)",
-            fontFamily: "'Caveat', cursive",
+            fontFamily: "'Chillax', sans-serif",
             fontSize: 16,
             color: "#8b7355",
             fontWeight: 700,
@@ -470,10 +470,10 @@ function EvidenceCard({ option, evidence, isOpen, onToggle }) {
             {option.emoji}
           </div>
           <div>
-            <div style={{ fontFamily: "'Caveat', cursive", fontSize: 16, color: option.color, fontWeight: 700 }}>
+            <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 16, color: option.color, fontWeight: 700 }}>
               {option.label}
             </div>
-            <div style={{ fontFamily: "Georgia, serif", fontSize: 11, color: "#b8a089", fontStyle: "italic" }}>
+            <div style={{ fontFamily: "'Chillax', sans-serif", fontSize: 11, color: "#b8a089", fontStyle: "italic" }}>
               Tap to {isOpen ? "collapse" : "reveal the research"}
             </div>
           </div>
@@ -515,7 +515,7 @@ function EvidenceCard({ option, evidence, isOpen, onToggle }) {
           <div style={{ height: 1, background: `${option.color}33`, marginBottom: 14 }} />
           <div
             style={{
-              fontFamily: "'Instrument Serif', serif",
+              fontFamily: "'Sigmar', cursive",
               fontSize: 16,
               color: "#4a3f35",
               fontStyle: "italic",
@@ -527,7 +527,7 @@ function EvidenceCard({ option, evidence, isOpen, onToggle }) {
           </div>
           <p
             style={{
-              fontFamily: "Georgia, serif",
+              fontFamily: "'Chillax', sans-serif",
               fontSize: 13,
               color: "#5a4e42",
               lineHeight: 1.7,
@@ -542,7 +542,7 @@ function EvidenceCard({ option, evidence, isOpen, onToggle }) {
               padding: "4px 12px",
               background: `${option.color}15`,
               borderRadius: 20,
-              fontFamily: "'Caveat', cursive",
+              fontFamily: "'Chillax', sans-serif",
               fontSize: 12,
               color: option.color,
               fontWeight: 600,
@@ -596,7 +596,7 @@ function RevealFlow({ scenario, choice }) {
         <div style={{ fontSize: 48, marginBottom: 10 }}>{chosen.emoji}</div>
         <div
           style={{
-            fontFamily: "'Instrument Serif', serif",
+            fontFamily: "'Sigmar', cursive",
             fontSize: 24,
             color: "#4a3f35",
             fontStyle: "italic",
@@ -608,7 +608,7 @@ function RevealFlow({ scenario, choice }) {
         </div>
         <div
           style={{
-            fontFamily: "'Caveat', cursive",
+            fontFamily: "'Chillax', sans-serif",
             fontSize: 16,
             color: chosen.color,
             fontWeight: 600,
@@ -633,7 +633,7 @@ function RevealFlow({ scenario, choice }) {
       >
         <div
           style={{
-            fontFamily: "'Instrument Serif', serif",
+            fontFamily: "'Sigmar', cursive",
             fontSize: 18,
             color: "#4a3f35",
             fontStyle: "italic",
@@ -648,11 +648,11 @@ function RevealFlow({ scenario, choice }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 18 }}>{scenario.optionA.emoji}</span>
-              <span style={{ fontFamily: "'Caveat', cursive", fontSize: 15, color: scenario.optionA.color, fontWeight: 700 }}>
+              <span style={{ fontFamily: "'Chillax', sans-serif", fontSize: 15, color: scenario.optionA.color, fontWeight: 700 }}>
                 {scenario.optionA.label}
               </span>
             </div>
-            <span style={{ fontFamily: "'Caveat', cursive", fontSize: 14, color: "#8b7355", fontWeight: 600 }}>
+            <span style={{ fontFamily: "'Chillax', sans-serif", fontSize: 14, color: "#8b7355", fontWeight: 600 }}>
               {scenario.votes.a} votes
             </span>
           </div>
@@ -663,11 +663,11 @@ function RevealFlow({ scenario, choice }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 18 }}>{scenario.optionB.emoji}</span>
-              <span style={{ fontFamily: "'Caveat', cursive", fontSize: 15, color: scenario.optionB.color, fontWeight: 700 }}>
+              <span style={{ fontFamily: "'Chillax', sans-serif", fontSize: 15, color: scenario.optionB.color, fontWeight: 700 }}>
                 {scenario.optionB.label}
               </span>
             </div>
-            <span style={{ fontFamily: "'Caveat', cursive", fontSize: 14, color: "#8b7355", fontWeight: 600 }}>
+            <span style={{ fontFamily: "'Chillax', sans-serif", fontSize: 14, color: "#8b7355", fontWeight: 600 }}>
               {scenario.votes.b} votes
             </span>
           </div>
@@ -686,7 +686,7 @@ function RevealFlow({ scenario, choice }) {
       >
         <div
           style={{
-            fontFamily: "'Instrument Serif', serif",
+            fontFamily: "'Sigmar', cursive",
             fontSize: 20,
             color: "#4a3f35",
             fontStyle: "italic",
@@ -698,7 +698,7 @@ function RevealFlow({ scenario, choice }) {
         </div>
         <div
           style={{
-            fontFamily: "'Caveat', cursive",
+            fontFamily: "'Chillax', sans-serif",
             fontSize: 13,
             color: "#c4b49e",
             textAlign: "center",
@@ -758,7 +758,7 @@ function RevealFlow({ scenario, choice }) {
           />
           <div
             style={{
-              fontFamily: "'Caveat', cursive",
+              fontFamily: "'Chillax', sans-serif",
               fontSize: 12,
               color: "#c4b49e",
               letterSpacing: 3,
@@ -771,7 +771,7 @@ function RevealFlow({ scenario, choice }) {
           </div>
           <div
             style={{
-              fontFamily: "'Instrument Serif', serif",
+              fontFamily: "'Sigmar', cursive",
               fontSize: 22,
               color: "#c45a3c",
               fontStyle: "italic",
@@ -783,7 +783,7 @@ function RevealFlow({ scenario, choice }) {
           </div>
           <p
             style={{
-              fontFamily: "Georgia, serif",
+              fontFamily: "'Chillax', sans-serif",
               fontSize: 14,
               color: "#5a4e42",
               lineHeight: 1.7,
@@ -798,7 +798,7 @@ function RevealFlow({ scenario, choice }) {
               padding: "5px 14px",
               background: "#f5ead6",
               borderRadius: 20,
-              fontFamily: "'Caveat', cursive",
+              fontFamily: "'Chillax', sans-serif",
               fontSize: 13,
               color: "#8b7355",
               fontWeight: 600,
@@ -929,7 +929,11 @@ export default function VotingPage() {
       }}
     >
       <link
-        href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Sigmar&display=swap"
+        rel="stylesheet"
+      />
+      <link
+        href="https://fonts.cdnfonts.com/css/chillax"
         rel="stylesheet"
       />
       <style>{`
@@ -950,7 +954,7 @@ export default function VotingPage() {
       <div style={{ padding: "28px 20px 6px", textAlign: "center" }}>
         <div
           style={{
-            fontFamily: "'Instrument Serif', serif",
+            fontFamily: "'Sigmar', cursive",
             fontSize: 22,
             color: "#c45a3c",
             fontStyle: "italic",
@@ -965,7 +969,7 @@ export default function VotingPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 8,
-            fontFamily: "'Caveat', cursive",
+            fontFamily: "'Chillax', sans-serif",
             fontSize: 14,
             color: "#8b7355",
             fontWeight: 600,
@@ -1017,7 +1021,7 @@ export default function VotingPage() {
               border: "none",
               borderRadius: 18,
               color: "#fff",
-              fontFamily: "'Caveat', cursive",
+              fontFamily: "'Chillax', sans-serif",
               fontSize: 20,
               fontWeight: 700,
               cursor: "pointer",
@@ -1045,7 +1049,7 @@ export default function VotingPage() {
             <div style={{ fontSize: 36, marginBottom: 10 }}>🎴</div>
             <div
               style={{
-                fontFamily: "'Instrument Serif', serif",
+                fontFamily: "'Sigmar', cursive",
                 fontSize: 22,
                 color: "#4a3f35",
                 fontStyle: "italic",
@@ -1057,7 +1061,7 @@ export default function VotingPage() {
             </div>
             <p
               style={{
-                fontFamily: "Georgia, serif",
+                fontFamily: "'Chillax', sans-serif",
                 fontSize: 14,
                 color: "#6b5e4f",
                 lineHeight: 1.7,
@@ -1075,7 +1079,7 @@ export default function VotingPage() {
         style={{
           textAlign: "center",
           padding: "28px 20px 16px",
-          fontFamily: "'Caveat', cursive",
+          fontFamily: "'Chillax', sans-serif",
           fontSize: 12,
           color: "#c4b49e",
           lineHeight: 1.7,
