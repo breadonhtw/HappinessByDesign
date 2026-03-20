@@ -818,7 +818,11 @@ const API_URL =
 export default function VotingPage() {
   const [station, setStation] = useState(1);
   const [choice, setChoice] = useState(null);
-  const [liveCounts, setLiveCounts] = useState(null);
+  const [liveCounts, setLiveCounts] = useState({
+    1: { a: SCENARIOS[1].votes.a, b: SCENARIOS[1].votes.b },
+    2: { a: SCENARIOS[2].votes.a, b: SCENARIOS[2].votes.b },
+    3: { a: SCENARIOS[3].votes.a, b: SCENARIOS[3].votes.b },
+  });
   const [submitting, setSubmitting] = useState(false);
   const scenario = SCENARIOS[station];
   const topRef = useRef(null);
