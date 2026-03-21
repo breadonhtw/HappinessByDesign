@@ -15,7 +15,6 @@ import {
   isValidChoice,
   markStationVote,
   normalizeCounts,
-  readPendingSyncMap,
   readStoredChoice,
   updatePendingSync,
 } from "../lib/voting"
@@ -27,12 +26,9 @@ export default function VotingPage() {
   const [choice, setChoice] = useState(null)
   const [liveCounts, setLiveCounts] = useState(() => buildInitialCounts(SCENARIOS))
   const [countsLoading, setCountsLoading] = useState(true)
-  const [pendingSyncs, setPendingSyncs] = useState(() =>
-    readPendingSyncMap(SCENARIOS),
-  )
   const [submitting, setSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState("")
-  const [countsError, setCountsError] = useState("")
+  const [, setSubmitError] = useState("")
+  const [, setCountsError] = useState("")
   const scenario = SCENARIOS[station]
   const topRef = useRef(null)
 
@@ -97,7 +93,6 @@ export default function VotingPage() {
         VOTE_API_CONFIG_ERROR ||
         "Voting API is not configured. Your choice is saved only on this device."
       updatePendingSync(stationId, selectedChoice)
-      setPendingSyncs((current) => ({ ...current, [stationId]: selectedChoice }))
       setSubmitError(message)
       return false
     }
@@ -119,11 +114,9 @@ export default function VotingPage() {
       }
 
       updatePendingSync(stationId, null)
-      setPendingSyncs((current) => ({ ...current, [stationId]: null }))
       return true
     } catch {
       updatePendingSync(stationId, selectedChoice)
-      setPendingSyncs((current) => ({ ...current, [stationId]: selectedChoice }))
       setSubmitError(
         "Your choice is saved on this device, but the vote server did not confirm it. Retry to sync it.",
       )
@@ -155,25 +148,7 @@ export default function VotingPage() {
 
   const goToStation = (s) => {
     setStation(s)
-    setSubmitError("")
     topRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
-
-  const handleRetrySync = async () => {
-    const pendingChoice = pendingSyncs[station]
-
-    if (!pendingChoice) {
-      return
-    }
-
-    setSubmitError("")
-    const synced = await submitVote({ station, choice: pendingChoice })
-
-    if (!synced) {
-      return
-    }
-
-    markStationVote(station, pendingChoice)
   }
 
   const currentScenario = {
@@ -354,92 +329,6 @@ export default function VotingPage() {
             </div>
           </div>
         </div>
-
-        {(countsError || submitError || pendingSyncs[station]) && (
-          <div style={{ padding: "0 20px 16px" }}>
-            <div
-              style={{
-                ...panelStyles.base,
-                position: "relative",
-                overflow: "hidden",
-                padding: "16px 16px 16px 18px",
-                borderRadius: votingTheme.radius.card,
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 5,
-                  background: `linear-gradient(180deg, ${votingTheme.colors.brass}, ${votingTheme.colors.clay})`,
-                }}
-              />
-              <div
-                style={{
-                  position: "absolute",
-                  top: -34,
-                  right: -22,
-                  width: 104,
-                  height: 104,
-                  borderRadius: "50%",
-                  background: alpha(votingTheme.colors.clay, 0.06),
-                }}
-              />
-              {countsError && (
-                <p
-                  style={{
-                    ...textStyles.body,
-                    margin: "0 0 10px",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: votingTheme.colors.textMuted,
-                  }}
-                >
-                  {countsError}
-                </p>
-              )}
-              {(submitError || pendingSyncs[station]) && (
-                <p
-                  style={{
-                    ...textStyles.body,
-                    margin: 0,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: votingTheme.colors.clay,
-                  }}
-                >
-                  {submitError ||
-                    "This vote is waiting to sync with the server."}
-                </p>
-              )}
-              {pendingSyncs[station] && (
-                <button
-                  onClick={handleRetrySync}
-                  disabled={submitting}
-                  style={{
-                    marginTop: 14,
-                    border: `1px solid ${alpha(votingTheme.colors.clayDark, 0.18)}`,
-                    borderRadius: 16,
-                    background: submitting
-                      ? alpha(votingTheme.colors.borderStrong, 0.55)
-                      : `linear-gradient(135deg, ${votingTheme.colors.clayDark}, ${votingTheme.colors.clay})`,
-                    color: votingTheme.colors.white,
-                    padding: "11px 16px",
-                    fontFamily: votingTheme.fonts.body,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    boxShadow: submitting ? "none" : votingTheme.shadow.button,
-                    cursor: submitting ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {submitting ? "Retrying..." : "Retry vote sync"}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
 
         {!choice ? (
           <SwipeCard scenario={currentScenario} onChoice={handleChoice} />
