@@ -1,16 +1,17 @@
-# React + Vite
+# Connection Trails
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Vite/React app for the Connection Trail voting flow.
 
-Currently, two official plugins are available:
+## Environment
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Create a local `.env` file before running the app:
 
-## React Compiler
+```bash
+cp .env.example .env
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Required variables:
 
-## Expanding the ESLint configuration
+- `VITE_VOTE_API_URL`: absolute URL for the vote counts and vote submission endpoint.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+If the variable is missing or invalid, the app falls back to bundled counts and saves votes locally until sync can be retried.
