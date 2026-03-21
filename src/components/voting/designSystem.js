@@ -116,6 +116,28 @@ export const textStyles = {
     color: votingTheme.colors.textMuted,
     lineHeight: 1.7,
   },
+  promptLead: {
+    fontFamily: votingTheme.fonts.body,
+    fontSize: 12,
+    fontWeight: 600,
+    letterSpacing: 0.6,
+    lineHeight: 1.5,
+    color: votingTheme.colors.textSoft,
+  },
+  promptFocus: {
+    fontFamily: votingTheme.fonts.display,
+    fontSize: 22,
+    fontStyle: "italic",
+    lineHeight: 1.35,
+    color: votingTheme.colors.clayDark,
+  },
+  promptQuestion: {
+    fontFamily: votingTheme.fonts.body,
+    fontSize: 15,
+    fontWeight: 600,
+    lineHeight: 1.55,
+    color: votingTheme.colors.textMuted,
+  },
   label: {
     fontFamily: votingTheme.fonts.body,
     fontWeight: 700,

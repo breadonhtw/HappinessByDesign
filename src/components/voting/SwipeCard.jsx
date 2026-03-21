@@ -7,6 +7,36 @@ import {
   votingTheme,
 } from "./designSystem"
 
+function formatPromptSections(prompt) {
+  const parts = prompt
+    .trim()
+    .split(/(?<=[.!?])\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+
+  if (parts.length >= 3) {
+    return {
+      lead: parts[0],
+      focus: parts[1],
+      prompt: parts.slice(2).join(" "),
+    }
+  }
+
+  if (parts.length === 2) {
+    return {
+      lead: "",
+      focus: parts[0],
+      prompt: parts[1],
+    }
+  }
+
+  return {
+    lead: "",
+    focus: parts[0] || prompt,
+    prompt: "",
+  }
+}
+
 export default function SwipeCard({ scenario, onChoice }) {
   const startX = useRef(0)
   const currentDelta = useRef(0)
@@ -14,6 +44,7 @@ export default function SwipeCard({ scenario, onChoice }) {
   const [isDragging, setIsDragging] = useState(false)
   const [exitDir, setExitDir] = useState(null)
   const threshold = 70
+  const promptSections = formatPromptSections(scenario.prompt)
 
   const getClientX = (e) => (e.touches ? e.touches[0].clientX : e.clientX)
 
@@ -227,23 +258,49 @@ export default function SwipeCard({ scenario, onChoice }) {
           <div
             style={{
               ...panelStyles.inset,
-              padding: "18px 18px",
+              padding: "20px 18px 18px",
               marginBottom: 22,
-              background: alpha(votingTheme.colors.surfaceStrong, 0.58),
+              background: `linear-gradient(180deg, ${alpha(votingTheme.colors.surfaceStrong, 0.92)}, ${alpha(votingTheme.colors.surfaceSoft, 0.68)})`,
             }}
           >
-            <p
+            <div
               style={{
-                fontFamily: votingTheme.fonts.body,
-                fontSize: 17,
-                color: votingTheme.colors.text,
-                lineHeight: 1.75,
+                maxWidth: 272,
+                margin: "0 auto",
+                display: "grid",
+                gap: 8,
                 textAlign: "center",
-                margin: 0,
               }}
             >
-              {scenario.prompt}
-            </p>
+              {promptSections.lead ? (
+                <p
+                  style={{
+                    ...textStyles.promptLead,
+                    margin: 0,
+                  }}
+                >
+                  {promptSections.lead}
+                </p>
+              ) : null}
+              <p
+                style={{
+                  ...textStyles.promptFocus,
+                  margin: 0,
+                }}
+              >
+                {promptSections.focus}
+              </p>
+              {promptSections.prompt ? (
+                <p
+                  style={{
+                    ...textStyles.promptQuestion,
+                    margin: 0,
+                  }}
+                >
+                  {promptSections.prompt}
+                </p>
+              ) : null}
+            </div>
           </div>
 
           <div
