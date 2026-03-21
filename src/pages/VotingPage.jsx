@@ -530,6 +530,20 @@ function AnimatedBar({ percentage, color, delay = 0 }) {
   );
 }
 
+function LoadingBlock({ width = "100%", height = 16, borderRadius = 10 }) {
+  return (
+    <div
+      style={{
+        width,
+        height,
+        borderRadius,
+        background: "#f0e6d8",
+        animation: "pulse 1.6s ease-in-out infinite",
+      }}
+    />
+  );
+}
+
 function EvidenceCard({ option, evidence, isOpen, onToggle }) {
   return (
     <div
@@ -674,7 +688,7 @@ function EvidenceCard({ option, evidence, isOpen, onToggle }) {
   );
 }
 
-function RevealFlow({ scenario, choice }) {
+function RevealFlow({ scenario, choice, countsLoading }) {
   const [phase, setPhase] = useState(0);
   const [openA, setOpenA] = useState(false);
   const [openB, setOpenB] = useState(false);
@@ -734,7 +748,19 @@ function RevealFlow({ scenario, choice }) {
             fontWeight: 600,
           }}
         >
-          You and {chosenCount} others made this choice
+          {countsLoading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginTop: 4,
+              }}
+            >
+              <LoadingBlock width={220} height={20} borderRadius={999} />
+            </div>
+          ) : (
+            `You and ${chosenCount} others made this choice`
+          )}
         </div>
       </div>
 
@@ -764,89 +790,124 @@ function RevealFlow({ scenario, choice }) {
           How everyone voted
         </div>
 
-        <div style={{ marginBottom: 16 }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 6,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 18 }}>{scenario.optionA.emoji}</span>
-              <span
+        {countsLoading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            {[scenario.optionA, scenario.optionB].map((option) => (
+              <div key={option.label}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 10,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 18 }}>{option.emoji}</span>
+                    <span
+                      style={{
+                        fontFamily: "'Chillax', sans-serif",
+                        fontSize: 15,
+                        color: option.color,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {option.label}
+                    </span>
+                  </div>
+                  <LoadingBlock width={88} height={18} borderRadius={999} />
+                </div>
+                <LoadingBlock width="100%" height={36} borderRadius={18} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div style={{ marginBottom: 16 }}>
+              <div
                 style={{
-                  fontFamily: "'Chillax', sans-serif",
-                  fontSize: 15,
-                  color: scenario.optionA.color,
-                  fontWeight: 700,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 6,
                 }}
               >
-                {scenario.optionA.label}
-              </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 18 }}>{scenario.optionA.emoji}</span>
+                  <span
+                    style={{
+                      fontFamily: "'Chillax', sans-serif",
+                      fontSize: 15,
+                      color: scenario.optionA.color,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {scenario.optionA.label}
+                  </span>
+                </div>
+                <span
+                  style={{
+                    fontFamily: "'Chillax', sans-serif",
+                    fontSize: 14,
+                    color: "#8b7355",
+                    fontWeight: 600,
+                  }}
+                >
+                  {scenario.votes.a} votes
+                </span>
+              </div>
+              {phase >= 2 && (
+                <AnimatedBar
+                  percentage={pctA}
+                  color={scenario.optionA.color}
+                  delay={300}
+                />
+              )}
             </div>
-            <span
-              style={{
-                fontFamily: "'Chillax', sans-serif",
-                fontSize: 14,
-                color: "#8b7355",
-                fontWeight: 600,
-              }}
-            >
-              {scenario.votes.a} votes
-            </span>
-          </div>
-          {phase >= 2 && (
-            <AnimatedBar
-              percentage={pctA}
-              color={scenario.optionA.color}
-              delay={300}
-            />
-          )}
-        </div>
 
-        <div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 6,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 18 }}>{scenario.optionB.emoji}</span>
-              <span
+            <div>
+              <div
                 style={{
-                  fontFamily: "'Chillax', sans-serif",
-                  fontSize: 15,
-                  color: scenario.optionB.color,
-                  fontWeight: 700,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 6,
                 }}
               >
-                {scenario.optionB.label}
-              </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 18 }}>{scenario.optionB.emoji}</span>
+                  <span
+                    style={{
+                      fontFamily: "'Chillax', sans-serif",
+                      fontSize: 15,
+                      color: scenario.optionB.color,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {scenario.optionB.label}
+                  </span>
+                </div>
+                <span
+                  style={{
+                    fontFamily: "'Chillax', sans-serif",
+                    fontSize: 14,
+                    color: "#8b7355",
+                    fontWeight: 600,
+                  }}
+                >
+                  {scenario.votes.b} votes
+                </span>
+              </div>
+              {phase >= 2 && (
+                <AnimatedBar
+                  percentage={pctB}
+                  color={scenario.optionB.color}
+                  delay={600}
+                />
+              )}
             </div>
-            <span
-              style={{
-                fontFamily: "'Chillax', sans-serif",
-                fontSize: 14,
-                color: "#8b7355",
-                fontWeight: 600,
-              }}
-            >
-              {scenario.votes.b} votes
-            </span>
-          </div>
-          {phase >= 2 && (
-            <AnimatedBar
-              percentage={pctB}
-              color={scenario.optionB.color}
-              delay={600}
-            />
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       {/* Phase 3 — Evidence cards */}
@@ -990,6 +1051,7 @@ export default function VotingPage() {
   const [station, setStation] = useState(1);
   const [choice, setChoice] = useState(null);
   const [liveCounts, setLiveCounts] = useState(() => buildInitialCounts(SCENARIOS));
+  const [countsLoading, setCountsLoading] = useState(true);
   const [pendingSyncs, setPendingSyncs] = useState(() =>
     readPendingSyncMap(SCENARIOS),
   );
@@ -1013,6 +1075,7 @@ export default function VotingPage() {
         VOTE_API_CONFIG_ERROR ||
           "Voting API is not configured. Live vote sync is disabled.",
       );
+      setCountsLoading(false);
       return undefined;
     }
 
@@ -1029,6 +1092,7 @@ export default function VotingPage() {
       .then((data) => {
         setLiveCounts(normalizeCounts(data, SCENARIOS));
         setCountsError("");
+        setCountsLoading(false);
       })
       .catch((error) => {
         if (error.name === "AbortError") {
@@ -1039,6 +1103,7 @@ export default function VotingPage() {
         setCountsError(
           "Live vote counts could not be loaded. Showing the last bundled counts.",
         );
+        setCountsLoading(false);
       });
 
     return () => controller.abort();
@@ -1285,7 +1350,11 @@ export default function VotingPage() {
       {!choice ? (
         <SwipeCard scenario={currentScenario} onChoice={handleChoice} />
       ) : (
-        <RevealFlow scenario={currentScenario} choice={choice} />
+        <RevealFlow
+          scenario={currentScenario}
+          choice={choice}
+          countsLoading={countsLoading}
+        />
       )}
 
       {/* Next station button */}
