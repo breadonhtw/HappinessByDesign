@@ -1,5 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 
+import { VOTE_API_URL, VOTE_API_CONFIG_ERROR } from "../config";
+import {
+  buildInitialCounts,
+  isValidChoice,
+  markStationVote,
+  normalizeCounts,
+  readPendingSyncMap,
+  readStoredChoice,
+  updatePendingSync,
+} from "../lib/voting";
+
 const SCENARIOS = {
   1: {
     title: "Friday Evening",
@@ -975,18 +986,16 @@ function RevealFlow({ scenario, choice }) {
   );
 }
 
-const API_URL =
-  "https://script.google.com/macros/s/AKfycbyfZyvX1mmQX6LxD2P92pO0DeoFDtd-W-iq_pa0ueUNAN7iHW7ZUgDndFFdlFBqgibWiQ/exec";
-
 export default function VotingPage() {
   const [station, setStation] = useState(1);
   const [choice, setChoice] = useState(null);
-  const [liveCounts, setLiveCounts] = useState({
-    1: { a: SCENARIOS[1].votes.a, b: SCENARIOS[1].votes.b },
-    2: { a: SCENARIOS[2].votes.a, b: SCENARIOS[2].votes.b },
-    3: { a: SCENARIOS[3].votes.a, b: SCENARIOS[3].votes.b },
-  });
+  const [liveCounts, setLiveCounts] = useState(() => buildInitialCounts(SCENARIOS));
+  const [pendingSyncs, setPendingSyncs] = useState(() =>
+    readPendingSyncMap(SCENARIOS),
+  );
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [countsError, setCountsError] = useState("");
   const scenario = SCENARIOS[station];
   const topRef = useRef(null);
 
@@ -999,79 +1008,136 @@ export default function VotingPage() {
 
   // Fetch live vote counts on mount
   useEffect(() => {
-    fetch(API_URL)
-      .then((r) => r.json())
-      .then((data) => setLiveCounts(data))
-      .catch(() => {
-        // Fallback to hardcoded counts if fetch fails
-        setLiveCounts({
-          1: { a: SCENARIOS[1].votes.a, b: SCENARIOS[1].votes.b },
-          2: { a: SCENARIOS[2].votes.a, b: SCENARIOS[2].votes.b },
-          3: { a: SCENARIOS[3].votes.a, b: SCENARIOS[3].votes.b },
-        });
-      });
-  }, []);
-
-  // Check if already voted at this station
-  const hasVoted = () => {
-    try {
-      return localStorage.getItem(`voted_station_${station}`) === "true";
-    } catch {
-      return false;
+    if (!VOTE_API_URL) {
+      setCountsError(
+        VOTE_API_CONFIG_ERROR ||
+          "Voting API is not configured. Live vote sync is disabled.",
+      );
+      return undefined;
     }
-  };
+
+    const controller = new AbortController();
+
+    fetch(VOTE_API_URL, { signal: controller.signal })
+      .then((r) => {
+        if (!r.ok) {
+          throw new Error(`Failed to fetch live vote counts (${r.status}).`);
+        }
+
+        return r.json();
+      })
+      .then((data) => {
+        setLiveCounts(normalizeCounts(data, SCENARIOS));
+        setCountsError("");
+      })
+      .catch((error) => {
+        if (error.name === "AbortError") {
+          return;
+        }
+
+        setLiveCounts(buildInitialCounts(SCENARIOS));
+        setCountsError(
+          "Live vote counts could not be loaded. Showing the last bundled counts.",
+        );
+      });
+
+    return () => controller.abort();
+  }, []);
 
   // On first load, if already voted, restore that state
   useEffect(() => {
-    if (hasVoted()) {
-      const prev = localStorage.getItem(`voted_station_${station}_choice`);
-      if (prev) setChoice(prev);
-    } else {
-      setChoice(null);
-    }
+    setChoice(readStoredChoice(station));
   }, [station]);
 
-  const handleChoice = (c) => {
-    setChoice(c);
-
-    // Mark as voted in localStorage
-    try {
-      localStorage.setItem(`voted_station_${station}`, "true");
-      localStorage.setItem(`voted_station_${station}_choice`, c);
-    } catch {}
-
-    // Optimistically update local counts
-    if (liveCounts) {
-      const updated = { ...liveCounts };
-      updated[station] = { ...updated[station] };
-      updated[station][c] = (updated[station][c] || 0) + 1;
-      setLiveCounts(updated);
+  const submitVote = async ({ station: stationId, choice: selectedChoice }) => {
+    if (!isValidChoice(selectedChoice)) {
+      setSubmitError("Invalid vote selection.");
+      return false;
     }
 
-    // Submit vote to Google Sheets
+    if (!VOTE_API_URL) {
+      const message =
+        VOTE_API_CONFIG_ERROR ||
+        "Voting API is not configured. Your choice is saved only on this device.";
+      updatePendingSync(stationId, selectedChoice);
+      setPendingSyncs((current) => ({ ...current, [stationId]: selectedChoice }));
+      setSubmitError(message);
+      return false;
+    }
+
     setSubmitting(true);
-    fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ station, choice: c }),
-    })
-      .catch(() => {}) // Silent fail — optimistic update already applied
-      .finally(() => setSubmitting(false));
+    setSubmitError("");
+
+    try {
+      const response = await fetch(VOTE_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ station: stationId, choice: selectedChoice }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Vote sync failed (${response.status}).`);
+      }
+
+      updatePendingSync(stationId, null);
+      setPendingSyncs((current) => ({ ...current, [stationId]: null }));
+      return true;
+    } catch {
+      updatePendingSync(stationId, selectedChoice);
+      setPendingSyncs((current) => ({ ...current, [stationId]: selectedChoice }));
+      setSubmitError(
+        "Your choice is saved on this device, but the vote server did not confirm it. Retry to sync it.",
+      );
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleChoice = async (c) => {
+    if (submitting || choice) {
+      return;
+    }
+
+    setChoice(c);
+    setSubmitError("");
+
+    markStationVote(station, c);
+
+    // Optimistically update local counts
+    setLiveCounts((current) => {
+      const updated = { ...current };
+      updated[station] = { ...updated[station] };
+      updated[station][c] = (updated[station][c] || 0) + 1;
+      return updated;
+    });
+
+    await submitVote({ station, choice: c });
   };
 
   const goToStation = (s) => {
     setStation(s);
-    // Check if previously voted at this station
-    try {
-      const prev = localStorage.getItem(`voted_station_${s}_choice`);
-      if (prev && localStorage.getItem(`voted_station_${s}`) === "true") {
-        setChoice(prev);
-      } else {
-        setChoice(null);
-      }
-    } catch {
-      setChoice(null);
-    }
+    setSubmitError("");
     topRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleRetrySync = async () => {
+    const pendingChoice = pendingSyncs[station];
+
+    if (!pendingChoice) {
+      return;
+    }
+
+    setSubmitError("");
+    const synced = await submitVote({ station, choice: pendingChoice });
+
+    if (!synced) {
+      return;
+    }
+
+    markStationVote(station, pendingChoice);
   };
 
   // Build scenario with live counts
@@ -1091,23 +1157,6 @@ export default function VotingPage() {
         paddingBottom: 40,
       }}
     >
-      <link
-        href="https://fonts.googleapis.com/css2?family=Sigmar&display=swap"
-        rel="stylesheet"
-      />
-      <link href="https://fonts.cdnfonts.com/css/chillax" rel="stylesheet" />
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.5; }
-          50% { opacity: 1; }
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      `}</style>
-
       <div ref={topRef} />
 
       {/* Header */}
@@ -1168,6 +1217,69 @@ export default function VotingPage() {
           />
         ))}
       </div>
+
+      {(countsError || submitError || pendingSyncs[station]) && (
+        <div style={{ padding: "0 20px 16px" }}>
+          <div
+            style={{
+              background: "#fffbf5",
+              borderRadius: 18,
+              border: "2px solid #e8ddd0",
+              padding: "14px 16px",
+            }}
+          >
+            {countsError && (
+              <p
+                style={{
+                  margin: "0 0 8px",
+                  fontFamily: "'Chillax', sans-serif",
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                  color: "#8b7355",
+                  fontWeight: 600,
+                }}
+              >
+                {countsError}
+              </p>
+            )}
+            {(submitError || pendingSyncs[station]) && (
+              <p
+                style={{
+                  margin: 0,
+                  fontFamily: "'Chillax', sans-serif",
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                  color: "#c45a3c",
+                  fontWeight: 700,
+                }}
+              >
+                {submitError ||
+                  "This vote is waiting to sync with the server."}
+              </p>
+            )}
+            {pendingSyncs[station] && (
+              <button
+                onClick={handleRetrySync}
+                disabled={submitting}
+                style={{
+                  marginTop: 12,
+                  border: "none",
+                  borderRadius: 12,
+                  background: submitting ? "#d9cdbf" : "#c45a3c",
+                  color: "#fff",
+                  padding: "10px 14px",
+                  fontFamily: "'Chillax', sans-serif",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: submitting ? "not-allowed" : "pointer",
+                }}
+              >
+                {submitting ? "Retrying..." : "Retry vote sync"}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       {!choice ? (
