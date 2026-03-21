@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -79,6 +80,9 @@ export default function VotingPage() {
     buildInitialCounts(SCENARIOS),
   );
   const [countsLoading, setCountsLoading] = useState(true);
+  const [invalidStationNotice, setInvalidStationNotice] = useState(
+    requestedStationState.invalidStation ? requestedStationState.fallbackStation : null,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [storageRevision, setStorageRevision] = useState(0);
   const [, setSubmitError] = useState("");
@@ -100,10 +104,13 @@ export default function VotingPage() {
       return;
     }
 
+    setInvalidStationNotice(requestedStationState.fallbackStation);
+
     const nextParams = new URLSearchParams(searchParams);
     nextParams.set("station", String(station));
     setSearchParams(nextParams, { replace: true });
   }, [
+    requestedStationState.fallbackStation,
     requestedStationState.invalidStation,
     searchParams,
     setSearchParams,
@@ -238,6 +245,7 @@ export default function VotingPage() {
   };
 
   const goToStation = (s) => {
+    setInvalidStationNotice(null);
     const nextParams = new URLSearchParams(searchParams);
     nextParams.set("station", String(s));
     setSearchParams(nextParams);
@@ -424,7 +432,7 @@ export default function VotingPage() {
           </div>
         </div>
 
-        {requestedStationState.invalidStation ? (
+        {invalidStationNotice !== null ? (
           <div style={{ padding: "0 20px 18px" }}>
             <div
               style={{
@@ -451,7 +459,7 @@ export default function VotingPage() {
                 }}
               >
                 This QR code points to an invalid station. Showing Station{" "}
-                {requestedStationState.fallbackStation} instead.
+                {invalidStationNotice} instead.
               </p>
             </div>
           </div>
