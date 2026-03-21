@@ -1,104 +1,194 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import {
   alpha,
   panelStyles,
   textStyles,
   votingTheme,
-} from "../components/voting/designSystem"
-import RevealFlow from "../components/voting/RevealFlow"
-import SwipeCard from "../components/voting/SwipeCard"
-import { VOTE_API_CONFIG_ERROR, VOTE_API_URL } from "../config"
-import { SCENARIOS } from "../data/scenarios"
+} from "../components/voting/designSystem";
+import RevealFlow from "../components/voting/RevealFlow";
+import SwipeCard from "../components/voting/SwipeCard";
+import { VOTE_API_CONFIG_ERROR, VOTE_API_URL } from "../config";
+import { SCENARIOS } from "../data/scenarios";
 import {
   buildInitialCounts,
+  getOrderedStationIds,
+  getStationEntryContext,
   isValidChoice,
   markStationVote,
   normalizeCounts,
+  parseRequestedStation,
   readStoredChoice,
   updatePendingSync,
-} from "../lib/voting"
+} from "../lib/voting";
 
-const stationRail = [1, 2, 3]
+const stationRail = getOrderedStationIds(SCENARIOS);
+const defaultStation = stationRail[0] ?? 1;
+const lastStation = stationRail[stationRail.length - 1] ?? defaultStation;
+
+function buildGuidance(entryContext) {
+  if (entryContext.priorIncompleteStation !== null) {
+    return {
+      accent: votingTheme.colors.clay,
+      eyebrow: "Complete the trail in order",
+      title: `Station ${entryContext.priorIncompleteStation} is still incomplete`,
+      body: `You're viewing Station ${entryContext.currentStation}, but you have not completed Station ${entryContext.priorIncompleteStation} yet.`,
+      actionLabel: `Go to Station ${entryContext.priorIncompleteStation} first`,
+      actionStation: entryContext.priorIncompleteStation,
+    };
+  }
+
+  if (
+    entryContext.isCurrentCompleted &&
+    entryContext.nextIncompleteStation !== null
+  ) {
+    return {
+      accent: votingTheme.colors.moss,
+      eyebrow: "Already completed",
+      title: `You've already completed Station ${entryContext.currentStation}`,
+      body: `You can revisit this stop or continue with Station ${entryContext.nextIncompleteStation}.`,
+      actionLabel: `Continue to Station ${entryContext.nextIncompleteStation}`,
+      actionStation: entryContext.nextIncompleteStation,
+    };
+  }
+
+  if (entryContext.isCurrentCompleted) {
+    return {
+      accent: votingTheme.colors.moss,
+      eyebrow: "Already completed",
+      title: `Station ${entryContext.currentStation} is done`,
+      body: "All stations on this device are already completed.",
+      actionLabel: "",
+      actionStation: null,
+    };
+  }
+
+  return null;
+}
 
 export default function VotingPage() {
-  const [station, setStation] = useState(1)
-  const [choice, setChoice] = useState(null)
-  const [liveCounts, setLiveCounts] = useState(() => buildInitialCounts(SCENARIOS))
-  const [countsLoading, setCountsLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [, setSubmitError] = useState("")
-  const [, setCountsError] = useState("")
-  const scenario = SCENARIOS[station]
-  const topRef = useRef(null)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedStationState = parseRequestedStation(
+    searchParams.get("station"),
+    SCENARIOS,
+  );
+  const station = requestedStationState.station;
+  const [choice, setChoice] = useState(() => readStoredChoice(station));
+  const [liveCounts, setLiveCounts] = useState(() =>
+    buildInitialCounts(SCENARIOS),
+  );
+  const [countsLoading, setCountsLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [storageRevision, setStorageRevision] = useState(0);
+  const [, setSubmitError] = useState("");
+  const [, setCountsError] = useState("");
+  const topRef = useRef(null);
+  const previousStationRef = useRef(station);
+  const scenario = SCENARIOS[station];
+  const entryContext = getStationEntryContext(station, SCENARIOS);
+  const guidance = buildGuidance(entryContext);
+  const completedStationSet = new Set(entryContext.completedStations);
+  const hasPriorGap = entryContext.priorIncompleteStation !== null;
+  const nextStationCta =
+    entryContext.isCurrentCompleted && !hasPriorGap
+      ? entryContext.nextIncompleteStation
+      : null;
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const s = parseInt(params.get("station"))
-    if (s >= 1 && s <= 3) setStation(s)
-  }, [])
+    if (!requestedStationState.invalidStation) {
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set("station", String(station));
+    setSearchParams(nextParams, { replace: true });
+  }, [
+    requestedStationState.invalidStation,
+    searchParams,
+    setSearchParams,
+    station,
+  ]);
 
   useEffect(() => {
     if (!VOTE_API_URL) {
       setCountsError(
         VOTE_API_CONFIG_ERROR ||
           "Voting API is not configured. Live vote sync is disabled.",
-      )
-      setCountsLoading(false)
-      return undefined
+      );
+      setCountsLoading(false);
+      return undefined;
     }
 
-    const controller = new AbortController()
+    const controller = new AbortController();
 
     fetch(VOTE_API_URL, { signal: controller.signal })
       .then((r) => {
         if (!r.ok) {
-          throw new Error(`Failed to fetch live vote counts (${r.status}).`)
+          throw new Error(`Failed to fetch live vote counts (${r.status}).`);
         }
 
-        return r.json()
+        return r.json();
       })
       .then((data) => {
-        setLiveCounts(normalizeCounts(data, SCENARIOS))
-        setCountsError("")
-        setCountsLoading(false)
+        setLiveCounts(normalizeCounts(data, SCENARIOS));
+        setCountsError("");
+        setCountsLoading(false);
       })
       .catch((error) => {
         if (error.name === "AbortError") {
-          return
+          return;
         }
 
-        setLiveCounts(buildInitialCounts(SCENARIOS))
+        setLiveCounts(buildInitialCounts(SCENARIOS));
         setCountsError(
           "Live vote counts could not be loaded. Showing the last bundled counts.",
-        )
-        setCountsLoading(false)
-      })
+        );
+        setCountsLoading(false);
+      });
 
-    return () => controller.abort()
-  }, [])
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
-    setChoice(readStoredChoice(station))
-  }, [station])
+    setChoice(readStoredChoice(station));
+  }, [station, storageRevision]);
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setStorageRevision((current) => current + 1);
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  useEffect(() => {
+    if (previousStationRef.current === station) {
+      return;
+    }
+
+    previousStationRef.current = station;
+    topRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [station]);
 
   const submitVote = async ({ station: stationId, choice: selectedChoice }) => {
     if (!isValidChoice(selectedChoice)) {
-      setSubmitError("Invalid vote selection.")
-      return false
+      setSubmitError("Invalid vote selection.");
+      return false;
     }
 
     if (!VOTE_API_URL) {
       const message =
         VOTE_API_CONFIG_ERROR ||
-        "Voting API is not configured. Your choice is saved only on this device."
-      updatePendingSync(stationId, selectedChoice)
-      setSubmitError(message)
-      return false
+        "Voting API is not configured. Your choice is saved only on this device.";
+      updatePendingSync(stationId, selectedChoice);
+      setSubmitError(message);
+      return false;
     }
 
-    setSubmitting(true)
-    setSubmitError("")
+    setSubmitting(true);
+    setSubmitError("");
 
     try {
       const response = await fetch(VOTE_API_URL, {
@@ -107,54 +197,56 @@ export default function VotingPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ station: stationId, choice: selectedChoice }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error(`Vote sync failed (${response.status}).`)
+        throw new Error(`Vote sync failed (${response.status}).`);
       }
 
-      updatePendingSync(stationId, null)
-      return true
+      updatePendingSync(stationId, null);
+      return true;
     } catch {
-      updatePendingSync(stationId, selectedChoice)
+      updatePendingSync(stationId, selectedChoice);
       setSubmitError(
         "Your choice is saved on this device, but the vote server did not confirm it. Retry to sync it.",
-      )
-      return false
+      );
+      return false;
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const handleChoice = async (c) => {
     if (submitting || choice) {
-      return
+      return;
     }
 
-    setChoice(c)
-    setSubmitError("")
+    setChoice(c);
+    setSubmitError("");
 
-    markStationVote(station, c)
+    markStationVote(station, c);
+    setStorageRevision((current) => current + 1);
 
     setLiveCounts((current) => {
-      const updated = { ...current }
-      updated[station] = { ...updated[station] }
-      updated[station][c] = (updated[station][c] || 0) + 1
-      return updated
-    })
+      const updated = { ...current };
+      updated[station] = { ...updated[station] };
+      updated[station][c] = (updated[station][c] || 0) + 1;
+      return updated;
+    });
 
-    await submitVote({ station, choice: c })
-  }
+    await submitVote({ station, choice: c });
+  };
 
   const goToStation = (s) => {
-    setStation(s)
-    topRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set("station", String(s));
+    setSearchParams(nextParams);
+  };
 
   const currentScenario = {
     ...scenario,
     votes: liveCounts ? liveCounts[station] : scenario.votes,
-  }
+  };
 
   return (
     <div
@@ -258,7 +350,8 @@ export default function VotingPage() {
                   letterSpacing: 0.25,
                 }}
               >
-                Station {currentScenario.stationNum} · {currentScenario.location}
+                Station {currentScenario.stationNum} ·{" "}
+                {currentScenario.location}
               </span>
             </div>
             <span
@@ -287,12 +380,13 @@ export default function VotingPage() {
               }}
             >
               {stationRail.map((s) => {
-                const isCurrent = station === s
-                const isPast = station > s
+                const isCurrent = station === s;
+                const isCompleted = completedStationSet.has(s);
 
                 return (
                   <button
                     key={s}
+                    aria-label={`Go to Station ${s}`}
                     onClick={() => goToStation(s)}
                     style={{
                       flex: 1,
@@ -313,22 +407,129 @@ export default function VotingPage() {
                         borderRadius: votingTheme.radius.chip,
                         border: "none",
                         background:
-                          isCurrent || isPast
+                          isCurrent || isCompleted
                             ? `linear-gradient(90deg, ${votingTheme.colors.clayDark}, ${votingTheme.colors.clay})`
                             : alpha(votingTheme.colors.borderStrong, 0.35),
                         boxShadow:
-                          isCurrent || isPast
+                          isCurrent || isCompleted
                             ? `0 6px 14px ${alpha(votingTheme.colors.clayDark, 0.18)}`
                             : "none",
                         padding: 0,
                       }}
                     />
                   </button>
-                )
+                );
               })}
             </div>
           </div>
         </div>
+
+        {requestedStationState.invalidStation ? (
+          <div style={{ padding: "0 20px 18px" }}>
+            <div
+              style={{
+                ...panelStyles.base,
+                padding: "12px 14px",
+                borderRadius: votingTheme.radius.card,
+                background: `linear-gradient(180deg, ${alpha(votingTheme.colors.surfaceStrong, 0.98)}, ${alpha(votingTheme.colors.brass, 0.1)})`,
+              }}
+            >
+              <div
+                style={{
+                  ...textStyles.eyebrow,
+                  color: votingTheme.colors.brass,
+                  marginBottom: 6,
+                }}
+              >
+                QR link check
+              </div>
+              <p
+                style={{
+                  ...textStyles.body,
+                  fontSize: 14,
+                  margin: 0,
+                }}
+              >
+                This QR code points to an invalid station. Showing Station{" "}
+                {requestedStationState.fallbackStation} instead.
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {guidance ? (
+          <div style={{ padding: "0 20px 18px" }}>
+            <div
+              style={{
+                ...panelStyles.base,
+                position: "relative",
+                overflow: "hidden",
+                padding: "16px 16px 14px",
+                borderRadius: votingTheme.radius.card,
+                background: `linear-gradient(180deg, ${alpha(votingTheme.colors.surfaceStrong, 0.98)}, ${alpha(guidance.accent, 0.08)})`,
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: "0 auto 0 0",
+                  width: 4,
+                  background: `linear-gradient(180deg, ${guidance.accent}, ${alpha(guidance.accent, 0.35)})`,
+                }}
+              />
+              <div
+                style={{
+                  ...textStyles.eyebrow,
+                  color: guidance.accent,
+                  marginBottom: 8,
+                }}
+              >
+                {guidance.eyebrow}
+              </div>
+              <div
+                style={{
+                  fontFamily: votingTheme.fonts.body,
+                  fontSize: 17,
+                  color: votingTheme.colors.text,
+                  fontWeight: 700,
+                  lineHeight: 1.35,
+                  marginBottom: 6,
+                }}
+              >
+                {guidance.title}
+              </div>
+              <p
+                style={{
+                  ...textStyles.body,
+                  fontSize: 14,
+                  margin: 0,
+                }}
+              >
+                {guidance.body}
+              </p>
+              {guidance.actionStation !== null ? (
+                <button
+                  onClick={() => goToStation(guidance.actionStation)}
+                  style={{
+                    marginTop: 12,
+                    minHeight: 38,
+                    padding: "9px 14px",
+                    borderRadius: votingTheme.radius.chip,
+                    border: `1px solid ${alpha(guidance.accent, 0.24)}`,
+                    background: alpha(guidance.accent, 0.12),
+                    color: guidance.accent,
+                    fontFamily: votingTheme.fonts.body,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {guidance.actionLabel}
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
         {!choice ? (
           <SwipeCard scenario={currentScenario} onChoice={handleChoice} />
@@ -340,7 +541,7 @@ export default function VotingPage() {
           />
         )}
 
-        {choice && station < 3 && (
+        {choice && nextStationCta !== null && (
           <div
             style={{
               padding: "8px 20px 0",
@@ -348,7 +549,7 @@ export default function VotingPage() {
             }}
           >
             <button
-              onClick={() => goToStation(station + 1)}
+              onClick={() => goToStation(nextStationCta)}
               style={{
                 width: "100%",
                 padding: "18px 18px",
@@ -364,77 +565,81 @@ export default function VotingPage() {
                 letterSpacing: 0.2,
               }}
             >
-              Walk to Station {station + 1} →
+              {nextStationCta === station + 1
+                ? `Walk to Station ${nextStationCta} →`
+                : `Continue to Station ${nextStationCta} →`}
             </button>
           </div>
         )}
 
-        {choice && station === 3 && (
-          <div
-            style={{
-              padding: "8px 20px 0",
-              animation: "fadeUp 0.6s ease-out 4.5s both",
-            }}
-          >
+        {choice &&
+          station === lastStation &&
+          (entryContext.isTrailComplete ? (
             <div
               style={{
-                ...panelStyles.strong,
-                position: "relative",
-                overflow: "hidden",
-                borderRadius: votingTheme.radius.panel,
-                padding: "30px 24px",
-                textAlign: "center",
+                padding: "8px 20px 0",
+                animation: "fadeUp 0.6s ease-out 4.5s both",
               }}
             >
               <div
                 style={{
-                  position: "absolute",
-                  inset: 1,
-                  borderRadius: votingTheme.radius.panel - 1,
-                  border: `1px solid ${alpha(votingTheme.colors.white, 0.72)}`,
-                  pointerEvents: "none",
-                }}
-              />
-              <div
-                style={{
-                  width: 62,
-                  height: 62,
-                  margin: "0 auto 14px",
-                  borderRadius: 20,
-                  background: `linear-gradient(180deg, ${alpha(votingTheme.colors.clay, 0.14)}, ${alpha(votingTheme.colors.brass, 0.18)})`,
-                  border: `1px solid ${alpha(votingTheme.colors.borderStrong, 0.5)}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 34,
-                  boxShadow: votingTheme.shadow.inset,
+                  ...panelStyles.strong,
+                  position: "relative",
+                  overflow: "hidden",
+                  borderRadius: votingTheme.radius.panel,
+                  padding: "30px 24px",
+                  textAlign: "center",
                 }}
               >
-                🎴
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 1,
+                    borderRadius: votingTheme.radius.panel - 1,
+                    border: `1px solid ${alpha(votingTheme.colors.white, 0.72)}`,
+                    pointerEvents: "none",
+                  }}
+                />
+                <div
+                  style={{
+                    width: 62,
+                    height: 62,
+                    margin: "0 auto 14px",
+                    borderRadius: 20,
+                    background: `linear-gradient(180deg, ${alpha(votingTheme.colors.clay, 0.14)}, ${alpha(votingTheme.colors.brass, 0.18)})`,
+                    border: `1px solid ${alpha(votingTheme.colors.borderStrong, 0.5)}`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 34,
+                    boxShadow: votingTheme.shadow.inset,
+                  }}
+                >
+                  🎴
+                </div>
+                <div
+                  style={{
+                    ...textStyles.sectionTitle,
+                    fontSize: 24,
+                    marginBottom: 10,
+                  }}
+                >
+                  Head to Dakota Breeze RN Lobby
+                </div>
+                <p
+                  style={{
+                    ...textStyles.body,
+                    fontSize: 14,
+                    margin: "0 auto",
+                    maxWidth: 320,
+                  }}
+                >
+                  Pick up your Quest Card, leave a commitment on the reflection
+                  wall, and take the first step toward connection.
+                </p>
               </div>
-              <div
-                style={{
-                  ...textStyles.sectionTitle,
-                  fontSize: 24,
-                  marginBottom: 10,
-                }}
-              >
-                Head to Dakota Breeze RN Lobby
-              </div>
-              <p
-                style={{
-                  ...textStyles.body,
-                  fontSize: 14,
-                  margin: "0 auto",
-                  maxWidth: 320,
-                }}
-              >
-                Pick up your Quest Card, leave a commitment on the reflection
-                wall, and take the first step toward connection.
-              </p>
             </div>
-          </div>
-        )}
+          ) : null)}
 
         <div
           style={{
@@ -460,5 +665,5 @@ export default function VotingPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

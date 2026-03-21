@@ -51,6 +51,42 @@ export function normalizeCounts(data, scenarios) {
   return normalized;
 }
 
+export function getOrderedStationIds(scenarios) {
+  return getScenarioKeys(scenarios)
+    .map((key) => Number(key))
+    .filter((station) => Number.isInteger(station))
+    .sort((a, b) => a - b);
+}
+
+export function parseRequestedStation(value, scenarios) {
+  const stationIds = getOrderedStationIds(scenarios);
+  const fallbackStation = stationIds[0] ?? 1;
+
+  if (value === null || value === "") {
+    return {
+      station: fallbackStation,
+      invalidStation: false,
+      fallbackStation,
+    };
+  }
+
+  const requestedStation = Number.parseInt(value, 10);
+
+  if (stationIds.includes(requestedStation)) {
+    return {
+      station: requestedStation,
+      invalidStation: false,
+      fallbackStation,
+    };
+  }
+
+  return {
+    station: fallbackStation,
+    invalidStation: true,
+    fallbackStation,
+  };
+}
+
 export function readStoredChoice(station) {
   try {
     if (localStorage.getItem(votedKey(station)) !== "true") {
@@ -64,6 +100,10 @@ export function readStoredChoice(station) {
   }
 }
 
+export function hasCompletedStation(station) {
+  return readStoredChoice(station) !== null;
+}
+
 export function markStationVote(station, choice) {
   if (!isValidChoice(choice)) {
     return;
@@ -75,6 +115,66 @@ export function markStationVote(station, choice) {
   } catch {
     // Ignore storage failures; voting should still work for the current session.
   }
+}
+
+export function getCompletedStations(scenarios) {
+  return getOrderedStationIds(scenarios).filter((station) =>
+    hasCompletedStation(station),
+  );
+}
+
+export function getFirstIncompleteStation(scenarios) {
+  return (
+    getOrderedStationIds(scenarios).find(
+      (station) => !hasCompletedStation(station),
+    ) ?? null
+  );
+}
+
+export function getNextIncompleteStation(currentStation, scenarios) {
+  return (
+    getOrderedStationIds(scenarios).find(
+      (station) =>
+        station > currentStation && !hasCompletedStation(station),
+    ) ?? null
+  );
+}
+
+export function isTrailComplete(scenarios) {
+  return getFirstIncompleteStation(scenarios) === null;
+}
+
+export function getStationEntryContext(requestedStation, scenarios) {
+  const stationIds = getOrderedStationIds(scenarios);
+  const fallbackStation = stationIds[0] ?? 1;
+  const safeStation = stationIds.includes(requestedStation)
+    ? requestedStation
+    : fallbackStation;
+  const completedStations = getCompletedStations(scenarios);
+  const completedStationSet = new Set(completedStations);
+  const priorIncompleteStation =
+    stationIds.find(
+      (station) =>
+        station < safeStation && !completedStationSet.has(station),
+    ) ?? null;
+
+  return {
+    requestedStation: safeStation,
+    currentStation: safeStation,
+    completedStations,
+    firstIncompleteStation:
+      stationIds.find((station) => !completedStationSet.has(station)) ?? null,
+    priorIncompleteStation,
+    isCurrentCompleted: completedStationSet.has(safeStation),
+    isTrailComplete:
+      stationIds.find((station) => !completedStationSet.has(station)) ===
+      undefined,
+    nextIncompleteStation:
+      stationIds.find(
+        (station) =>
+          station > safeStation && !completedStationSet.has(station),
+      ) ?? null,
+  };
 }
 
 export function readPendingSyncMap(scenarios) {
