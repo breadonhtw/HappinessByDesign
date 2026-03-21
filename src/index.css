@@ -13,7 +13,9 @@ body {
 }
 
 body {
-  background: #f5ead6;
+  background: linear-gradient(180deg, #f7ecd9, #eadac1);
+  color: #463528;
+  font-family: "Instrument Sans", sans-serif;
 }
 
 #root {
