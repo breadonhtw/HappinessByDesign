@@ -85,8 +85,8 @@ export default function VotingPage() {
   );
   const [submitting, setSubmitting] = useState(false);
   const [storageRevision, setStorageRevision] = useState(0);
-  const [, setSubmitError] = useState("");
-  const [, setCountsError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [countsError, setCountsError] = useState("");
   const topRef = useRef(null);
   const previousStationRef = useRef(station);
   const scenario = SCENARIOS[station];
@@ -201,13 +201,28 @@ export default function VotingPage() {
       const response = await fetch(VOTE_API_URL, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "text/plain;charset=utf-8",
         },
         body: JSON.stringify({ station: stationId, choice: selectedChoice }),
       });
 
+      const rawResponse = await response.text();
+      let payload = null;
+
+      if (rawResponse) {
+        try {
+          payload = JSON.parse(rawResponse);
+        } catch {
+          payload = null;
+        }
+      }
+
       if (!response.ok) {
         throw new Error(`Vote sync failed (${response.status}).`);
+      }
+
+      if (payload?.success === false) {
+        throw new Error("Vote sync failed.");
       }
 
       updatePendingSync(stationId, null);
@@ -535,6 +550,72 @@ export default function VotingPage() {
                   {guidance.actionLabel}
                 </button>
               ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        {countsError ? (
+          <div style={{ padding: "0 20px 18px" }}>
+            <div
+              role="status"
+              style={{
+                ...panelStyles.base,
+                padding: "12px 14px",
+                borderRadius: votingTheme.radius.card,
+                background: `linear-gradient(180deg, ${alpha(votingTheme.colors.surfaceStrong, 0.98)}, ${alpha(votingTheme.colors.brass, 0.1)})`,
+              }}
+            >
+              <div
+                style={{
+                  ...textStyles.eyebrow,
+                  color: votingTheme.colors.brass,
+                  marginBottom: 6,
+                }}
+              >
+                Live count status
+              </div>
+              <p
+                style={{
+                  ...textStyles.body,
+                  fontSize: 14,
+                  margin: 0,
+                }}
+              >
+                {countsError}
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {submitError ? (
+          <div style={{ padding: "0 20px 18px" }}>
+            <div
+              role="alert"
+              style={{
+                ...panelStyles.base,
+                padding: "12px 14px",
+                borderRadius: votingTheme.radius.card,
+                background: `linear-gradient(180deg, ${alpha(votingTheme.colors.surfaceStrong, 0.98)}, ${alpha(votingTheme.colors.clay, 0.08)})`,
+              }}
+            >
+              <div
+                style={{
+                  ...textStyles.eyebrow,
+                  color: votingTheme.colors.clay,
+                  marginBottom: 6,
+                }}
+              >
+                Vote sync status
+              </div>
+              <p
+                style={{
+                  ...textStyles.body,
+                  fontSize: 14,
+                  margin: 0,
+                }}
+              >
+                {submitError}
+              </p>
             </div>
           </div>
         ) : null}

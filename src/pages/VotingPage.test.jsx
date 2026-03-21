@@ -1,8 +1,7 @@
 import React from "react"
-import { act } from "react"
-import { render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import App from "../App"
 
@@ -16,7 +15,27 @@ function renderAppAt(path) {
   return render(<App />)
 }
 
+async function swipeRight(container) {
+  const draggable = [...container.querySelectorAll("div")].find(
+    (element) => element.style.cursor === "grab",
+  )
+
+  expect(draggable).toBeTruthy()
+
+  fireEvent.mouseDown(draggable, { clientX: 0 })
+  fireEvent.mouseMove(draggable, { clientX: 140 })
+  fireEvent.mouseUp(draggable, { clientX: 140 })
+
+  await act(async () => {
+    await new Promise((resolve) => window.setTimeout(resolve, 400))
+  })
+}
+
 describe("VotingPage QR progression", () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it("shows prior-station guidance for out-of-order QR entry", async () => {
     renderAppAt("/vote?station=2")
 
@@ -95,5 +114,65 @@ describe("VotingPage QR progression", () => {
         screen.getByText("You've already completed Station 2"),
       ).toBeTruthy()
     })
+  })
+
+  it("submits votes as a CORS-simple text payload", async () => {
+    const fetchMock = vi.fn((_, init) => {
+      if (!init) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ 1: { a: 3, b: 0 }, 2: { a: 0, b: 1 }, 3: { a: 0, b: 0 } }),
+        })
+      }
+
+      return Promise.resolve({
+        ok: true,
+        text: async () => JSON.stringify({ success: true }),
+      })
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { container } = renderAppAt("/vote?station=1")
+
+    await swipeRight(container)
+
+    const postCall = fetchMock.mock.calls.find(([, init]) => init?.method === "POST")
+
+    expect(postCall).toBeTruthy()
+    expect(postCall[1].headers["Content-Type"]).toBe("text/plain;charset=utf-8")
+    expect(postCall[1].body).toBe(JSON.stringify({ station: 1, choice: "a" }))
+  })
+
+  it("shows a sync error when the vote API returns success false", async () => {
+    const fetchMock = vi.fn((_, init) => {
+      if (!init) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ 1: { a: 3, b: 0 }, 2: { a: 0, b: 1 }, 3: { a: 0, b: 0 } }),
+        })
+      }
+
+      return Promise.resolve({
+        ok: true,
+        text: async () => JSON.stringify({ success: false }),
+      })
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { container } = renderAppAt("/vote?station=1")
+
+    await swipeRight(container)
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toBeTruthy()
+    })
+
+    expect(
+      screen.getByText(
+        "Your choice is saved on this device, but the vote server did not confirm it. Retry to sync it.",
+      ),
+    ).toBeTruthy()
   })
 })
