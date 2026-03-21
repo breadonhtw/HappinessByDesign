@@ -1,48 +1,57 @@
-import { useRef, useState } from "react";
+import { useRef, useState } from "react"
+
+import {
+  alpha,
+  panelStyles,
+  textStyles,
+  votingTheme,
+} from "./designSystem"
 
 export default function SwipeCard({ scenario, onChoice }) {
-  const startX = useRef(0);
-  const currentDelta = useRef(0);
-  const [offset, setOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [exitDir, setExitDir] = useState(null);
-  const threshold = 70;
+  const startX = useRef(0)
+  const currentDelta = useRef(0)
+  const [offset, setOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [exitDir, setExitDir] = useState(null)
+  const threshold = 70
 
-  const getClientX = (e) => (e.touches ? e.touches[0].clientX : e.clientX);
+  const getClientX = (e) => (e.touches ? e.touches[0].clientX : e.clientX)
 
   const handleStart = (e) => {
-    startX.current = getClientX(e);
-    setIsDragging(true);
-  };
+    startX.current = getClientX(e)
+    setIsDragging(true)
+  }
 
   const handleMove = (e) => {
-    if (!isDragging) return;
-    currentDelta.current = getClientX(e) - startX.current;
-    setOffset(currentDelta.current);
-  };
+    if (!isDragging) return
+    currentDelta.current = getClientX(e) - startX.current
+    setOffset(currentDelta.current)
+  }
 
   const handleEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
+    if (!isDragging) return
+    setIsDragging(false)
     if (currentDelta.current > threshold) {
-      setExitDir("right");
-      setTimeout(() => onChoice("a"), 380);
+      setExitDir("right")
+      setTimeout(() => onChoice("a"), 380)
     } else if (currentDelta.current < -threshold) {
-      setExitDir("left");
-      setTimeout(() => onChoice("b"), 380);
+      setExitDir("left")
+      setTimeout(() => onChoice("b"), 380)
     } else {
-      setOffset(0);
+      setOffset(0)
     }
-    currentDelta.current = 0;
-  };
+    currentDelta.current = 0
+  }
 
-  const rotation = offset * 0.06;
-  const leftGlow = Math.max(0, Math.min(1, -offset / threshold));
-  const rightGlow = Math.max(0, Math.min(1, offset / threshold));
+  const rotation = offset * 0.06
+  const leftGlow = Math.max(0, Math.min(1, -offset / threshold))
+  const rightGlow = Math.max(0, Math.min(1, offset / threshold))
   const translateX =
-    exitDir === "right" ? 500 : exitDir === "left" ? -500 : offset;
+    exitDir === "right" ? 500 : exitDir === "left" ? -500 : offset
   const exitRot =
-    exitDir === "right" ? 15 : exitDir === "left" ? -15 : rotation;
+    exitDir === "right" ? 15 : exitDir === "left" ? -15 : rotation
+
+  const baseShadow = `0 ${16 + Math.abs(offset) * 0.06}px ${38 + Math.abs(offset) * 0.12}px rgba(91, 67, 40, ${0.11 + Math.abs(offset) * 0.00025})`
 
   return (
     <div
@@ -53,93 +62,42 @@ export default function SwipeCard({ scenario, onChoice }) {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        padding: "0 16px",
+        padding: "0 16px 20px",
         overflow: "hidden",
       }}
     >
       <div
         style={{
           position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 80,
-          background: `linear-gradient(to right, rgba(196,90,60,${leftGlow * 0.2}), transparent)`,
+          left: -12,
+          top: 32,
+          bottom: 32,
+          width: 112,
+          background: `linear-gradient(to right, ${alpha(
+            scenario.optionB.color,
+            leftGlow * 0.18,
+          )}, transparent)`,
           pointerEvents: "none",
           transition: isDragging ? "none" : "background 0.3s",
-          zIndex: 2,
+          zIndex: 1,
         }}
       />
       <div
         style={{
           position: "absolute",
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: 80,
-          background: `linear-gradient(to left, rgba(107,143,94,${rightGlow * 0.2}), transparent)`,
+          right: -12,
+          top: 32,
+          bottom: 32,
+          width: 112,
+          background: `linear-gradient(to left, ${alpha(
+            scenario.optionA.color,
+            rightGlow * 0.18,
+          )}, transparent)`,
           pointerEvents: "none",
           transition: isDragging ? "none" : "background 0.3s",
-          zIndex: 2,
+          zIndex: 1,
         }}
       />
-
-      <div
-        style={{
-          position: "absolute",
-          left: 8,
-          top: "50%",
-          transform: "translateY(-50%)",
-          textAlign: "center",
-          opacity: leftGlow > 0.15 ? leftGlow : 0.2,
-          transition: isDragging ? "none" : "opacity 0.3s",
-          zIndex: 3,
-          pointerEvents: "none",
-        }}
-      >
-        <div style={{ fontSize: 28, marginBottom: 2 }}>
-          {scenario.optionB.emoji}
-        </div>
-        <div
-          style={{
-            fontFamily: "'Chillax', sans-serif",
-            fontSize: 12,
-            color: "#c45a3c",
-            fontWeight: 700,
-            width: 56,
-          }}
-        >
-          {scenario.optionB.label}
-        </div>
-      </div>
-      <div
-        style={{
-          position: "absolute",
-          right: 8,
-          top: "50%",
-          transform: "translateY(-50%)",
-          textAlign: "center",
-          opacity: rightGlow > 0.15 ? rightGlow : 0.2,
-          transition: isDragging ? "none" : "opacity 0.3s",
-          zIndex: 3,
-          pointerEvents: "none",
-        }}
-      >
-        <div style={{ fontSize: 28, marginBottom: 2 }}>
-          {scenario.optionA.emoji}
-        </div>
-        <div
-          style={{
-            fontFamily: "'Chillax', sans-serif",
-            fontSize: 12,
-            color: "#6b8f5e",
-            fontWeight: 700,
-            width: 56,
-          }}
-        >
-          {scenario.optionA.label}
-        </div>
-      </div>
 
       <div
         onTouchStart={handleStart}
@@ -150,8 +108,8 @@ export default function SwipeCard({ scenario, onChoice }) {
         onMouseUp={handleEnd}
         onMouseLeave={() => isDragging && handleEnd()}
         style={{
-          width: "86%",
-          maxWidth: 360,
+          width: "100%",
+          maxWidth: 392,
           transform: `translateX(${translateX}px) rotate(${exitRot}deg)`,
           transition: isDragging
             ? "none"
@@ -165,41 +123,66 @@ export default function SwipeCard({ scenario, onChoice }) {
       >
         <div
           style={{
-            background: "#fffbf5",
-            borderRadius: 24,
-            padding: "36px 24px 30px",
-            border: "2px solid #e8ddd0",
-            boxShadow: `0 ${12 + Math.abs(offset) * 0.05}px ${30 + Math.abs(offset) * 0.1}px rgba(0,0,0,${0.07 + Math.abs(offset) * 0.0003})`,
+            ...panelStyles.strong,
+            position: "relative",
+            overflow: "hidden",
+            padding: "34px 24px 28px",
+            borderRadius: 30,
+            boxShadow: `${votingTheme.shadow.panelStrong}, ${baseShadow}`,
           }}
         >
-          <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <div
+            style={{
+              position: "absolute",
+              inset: 1,
+              borderRadius: 29,
+              border: `1px solid ${alpha(votingTheme.colors.white, 0.7)}`,
+              pointerEvents: "none",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: -54,
+              right: -30,
+              width: 154,
+              height: 154,
+              borderRadius: "50%",
+              background: alpha(votingTheme.colors.brass, 0.1),
+            }}
+          />
+          <div
+            style={{
+              textAlign: "center",
+              marginBottom: 20,
+            }}
+          >
             <div
               style={{
-                display: "inline-block",
-                padding: "4px 16px",
-                background: "#f5ead6",
-                borderRadius: 20,
-                fontFamily: "'Chillax', sans-serif",
-                fontSize: 12,
-                color: "#b8a089",
-                fontWeight: 600,
-                letterSpacing: 2,
-                textTransform: "uppercase",
+                ...panelStyles.chip,
+                padding: "5px 16px",
+                minHeight: 32,
+                background: alpha(votingTheme.colors.surfaceSoft, 0.9),
               }}
             >
-              Station {scenario.stationNum}
+              <span
+                style={{
+                  ...textStyles.eyebrow,
+                  color: votingTheme.colors.textSoft,
+                }}
+              >
+                Station {scenario.stationNum}
+              </span>
             </div>
           </div>
 
           <div
             style={{
-              fontFamily: "'Sigmar', cursive",
-              fontSize: 30,
-              color: "#c45a3c",
-              fontStyle: "italic",
+              ...textStyles.sectionTitle,
+              fontSize: 32,
+              color: votingTheme.colors.clay,
               textAlign: "center",
-              marginBottom: 20,
-              lineHeight: 1.15,
+              marginBottom: 18,
             }}
           >
             {scenario.title}
@@ -210,60 +193,157 @@ export default function SwipeCard({ scenario, onChoice }) {
               display: "flex",
               alignItems: "center",
               gap: 12,
-              margin: "0 20px 20px",
+              margin: "0 18px 20px",
             }}
           >
-            <div style={{ flex: 1, height: 1, background: "#e8ddd0" }} />
-            <div style={{ fontSize: 14, color: "#d4c4a8" }}>✦</div>
-            <div style={{ flex: 1, height: 1, background: "#e8ddd0" }} />
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                background: alpha(votingTheme.colors.borderStrong, 0.6),
+              }}
+            />
+            <div
+              style={{
+                ...panelStyles.chip,
+                width: 32,
+                height: 32,
+                padding: 0,
+                color: votingTheme.colors.brass,
+                fontSize: 13,
+              }}
+            >
+              ✦
+            </div>
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                background: alpha(votingTheme.colors.borderStrong, 0.6),
+              }}
+            />
           </div>
 
-          <p
+          <div
             style={{
-              fontFamily: "'Chillax', sans-serif",
-              fontSize: 17,
-              color: "#4a3f35",
-              lineHeight: 1.75,
-              textAlign: "center",
-              margin: "0 0 28px",
+              ...panelStyles.inset,
+              padding: "18px 18px",
+              marginBottom: 22,
+              background: alpha(votingTheme.colors.surfaceStrong, 0.58),
             }}
           >
-            {scenario.prompt}
-          </p>
+            <p
+              style={{
+                fontFamily: votingTheme.fonts.body,
+                fontSize: 17,
+                color: votingTheme.colors.text,
+                lineHeight: 1.75,
+                textAlign: "center",
+                margin: 0,
+              }}
+            >
+              {scenario.prompt}
+            </p>
+          </div>
+
+          <div
+            style={{
+              ...panelStyles.chip,
+              display: "flex",
+              gap: 10,
+              minHeight: 36,
+              margin: "0 auto 18px",
+              width: "fit-content",
+              maxWidth: "100%",
+              padding: "8px 14px",
+              background: alpha(votingTheme.colors.surfaceStrong, 0.78),
+            }}
+          >
+            <span
+              style={{
+                fontFamily: votingTheme.fonts.body,
+                fontSize: 12,
+                color: scenario.optionB.color,
+                fontWeight: 700,
+                whiteSpace: "nowrap",
+              }}
+            >
+              ← Left for B
+            </span>
+            <span
+              style={{
+                width: 1,
+                alignSelf: "stretch",
+                background: alpha(votingTheme.colors.borderStrong, 0.55),
+              }}
+            />
+            <span
+              style={{
+                fontFamily: votingTheme.fonts.body,
+                fontSize: 12,
+                color: scenario.optionA.color,
+                fontWeight: 700,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Right for A →
+            </span>
+          </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div
               style={{
+                ...panelStyles.inset,
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                padding: "14px 16px",
-                background: rightGlow > 0.2 ? scenario.optionA.bg : "#fafaf5",
-                borderRadius: 16,
-                border: `2px solid ${rightGlow > 0.2 ? scenario.optionA.color : "#ede6db"}`,
-                transition: isDragging ? "none" : "all 0.3s",
+                padding: "15px 16px",
+                background:
+                  rightGlow > 0.2
+                    ? `linear-gradient(135deg, ${scenario.optionA.bg}, ${alpha(
+                        scenario.optionA.color,
+                        0.12,
+                      )})`
+                    : alpha(votingTheme.colors.surfaceStrong, 0.62),
+                borderColor:
+                  rightGlow > 0.2
+                    ? alpha(scenario.optionA.color, 0.52)
+                    : alpha(votingTheme.colors.borderStrong, 0.45),
+                transition: isDragging ? "none" : "all 0.3s ease",
               }}
             >
-              <div style={{ fontSize: 24, flexShrink: 0 }}>
+              <div
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 14,
+                  background: alpha(scenario.optionA.color, rightGlow > 0.2 ? 0.22 : 0.16),
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 24,
+                  flexShrink: 0,
+                }}
+              >
                 {scenario.optionA.emoji}
               </div>
               <div>
                 <div
                   style={{
-                    fontFamily: "'Chillax', sans-serif",
+                    fontFamily: votingTheme.fonts.body,
                     fontSize: 13,
                     color: scenario.optionA.color,
                     fontWeight: 700,
-                    marginBottom: 1,
+                    marginBottom: 2,
                   }}
                 >
                   Option A — Swipe right →
                 </div>
                 <div
                   style={{
-                    fontFamily: "'Chillax', sans-serif",
+                    fontFamily: votingTheme.fonts.body,
                     fontSize: 14,
-                    color: "#4a3f35",
+                    color: votingTheme.colors.text,
                     lineHeight: 1.5,
                   }}
                 >
@@ -273,36 +353,57 @@ export default function SwipeCard({ scenario, onChoice }) {
             </div>
             <div
               style={{
+                ...panelStyles.inset,
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                padding: "14px 16px",
-                background: leftGlow > 0.2 ? scenario.optionB.bg : "#fafaf5",
-                borderRadius: 16,
-                border: `2px solid ${leftGlow > 0.2 ? scenario.optionB.color : "#ede6db"}`,
-                transition: isDragging ? "none" : "all 0.3s",
+                padding: "15px 16px",
+                background:
+                  leftGlow > 0.2
+                    ? `linear-gradient(135deg, ${scenario.optionB.bg}, ${alpha(
+                        scenario.optionB.color,
+                        0.12,
+                      )})`
+                    : alpha(votingTheme.colors.surfaceStrong, 0.62),
+                borderColor:
+                  leftGlow > 0.2
+                    ? alpha(scenario.optionB.color, 0.52)
+                    : alpha(votingTheme.colors.borderStrong, 0.45),
+                transition: isDragging ? "none" : "all 0.3s ease",
               }}
             >
-              <div style={{ fontSize: 24, flexShrink: 0 }}>
+              <div
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 14,
+                  background: alpha(scenario.optionB.color, leftGlow > 0.2 ? 0.22 : 0.16),
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 24,
+                  flexShrink: 0,
+                }}
+              >
                 {scenario.optionB.emoji}
               </div>
               <div>
                 <div
                   style={{
-                    fontFamily: "'Chillax', sans-serif",
+                    fontFamily: votingTheme.fonts.body,
                     fontSize: 13,
                     color: scenario.optionB.color,
                     fontWeight: 700,
-                    marginBottom: 1,
+                    marginBottom: 2,
                   }}
                 >
                   ← Swipe left — Option B
                 </div>
                 <div
                   style={{
-                    fontFamily: "'Chillax', sans-serif",
+                    fontFamily: votingTheme.fonts.body,
                     fontSize: 14,
-                    color: "#4a3f35",
+                    color: votingTheme.colors.text,
                     lineHeight: 1.5,
                   }}
                 >
@@ -316,17 +417,20 @@ export default function SwipeCard({ scenario, onChoice }) {
 
       <div
         style={{
+          ...panelStyles.chip,
           marginTop: 20,
           textAlign: "center",
-          fontFamily: "'Chillax', sans-serif",
-          fontSize: 15,
-          color: "#c4b49e",
-          fontWeight: 600,
+          fontFamily: votingTheme.fonts.body,
+          fontSize: 14,
+          color: votingTheme.colors.textSoft,
+          fontWeight: 700,
           animation: "pulse 2s ease-in-out infinite",
+          padding: "9px 18px",
+          background: alpha(votingTheme.colors.surfaceStrong, 0.66),
         }}
       >
         ← swipe the card to choose →
       </div>
     </div>
-  );
+  )
 }

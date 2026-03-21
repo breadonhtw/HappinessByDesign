@@ -1,7 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 
-import AnimatedBar from "./AnimatedBar";
-import EvidenceCard from "./EvidenceCard";
+import {
+  alpha,
+  panelStyles,
+  textStyles,
+  votingTheme,
+} from "./designSystem"
+import AnimatedBar from "./AnimatedBar"
+import EvidenceCard from "./EvidenceCard"
 
 function LoadingBlock({ width = "100%", height = 16, borderRadius = 10 }) {
   return (
@@ -10,17 +16,21 @@ function LoadingBlock({ width = "100%", height = 16, borderRadius = 10 }) {
         width,
         height,
         borderRadius,
-        background: "#f0e6d8",
+        background: `linear-gradient(90deg, ${votingTheme.colors.surfaceMuted}, ${alpha(
+          votingTheme.colors.surfaceStrong,
+          0.95,
+        )}, ${votingTheme.colors.surfaceMuted})`,
+        border: `1px solid ${alpha(votingTheme.colors.borderStrong, 0.28)}`,
         animation: "pulse 1.6s ease-in-out infinite",
       }}
     />
-  );
+  )
 }
 
 export default function RevealFlow({ scenario, choice, countsLoading }) {
-  const [phase, setPhase] = useState(0);
-  const [openA, setOpenA] = useState(false);
-  const [openB, setOpenB] = useState(false);
+  const [phase, setPhase] = useState(0)
+  const [openA, setOpenA] = useState(false)
+  const [openB, setOpenB] = useState(false)
 
   useEffect(() => {
     const timers = [
@@ -28,248 +38,314 @@ export default function RevealFlow({ scenario, choice, countsLoading }) {
       setTimeout(() => setPhase(2), 1000),
       setTimeout(() => setPhase(3), 2600),
       setTimeout(() => setPhase(4), 4000),
-    ];
-    return () => timers.forEach(clearTimeout);
-  }, []);
+    ]
+    return () => timers.forEach(clearTimeout)
+  }, [])
 
-  const total = (scenario.votes.a || 0) + (scenario.votes.b || 0);
+  const total = (scenario.votes.a || 0) + (scenario.votes.b || 0)
   const pctA =
-    total > 0 ? Math.round(((scenario.votes.a || 0) / total) * 100) : 50;
-  const pctB = total > 0 ? 100 - pctA : 50;
-  const chosen = choice === "a" ? scenario.optionA : scenario.optionB;
+    total > 0 ? Math.round(((scenario.votes.a || 0) / total) * 100) : 50
+  const pctB = total > 0 ? 100 - pctA : 50
+  const chosen = choice === "a" ? scenario.optionA : scenario.optionB
   const chosenCount = Math.max(
     0,
     (choice === "a" ? scenario.votes.a || 0 : scenario.votes.b || 0) - 1,
-  );
+  )
+
+  const phases = [
+    {
+      visible: phase >= 1,
+      delay: "0s",
+    },
+    {
+      visible: phase >= 2,
+      delay: "0.15s",
+    },
+    {
+      visible: phase >= 3,
+      delay: "0s",
+    },
+    {
+      visible: phase >= 4,
+      delay: "0s",
+    },
+  ]
 
   return (
-    <div style={{ padding: "0 20px" }}>
+    <div style={{ padding: "0 20px 8px" }}>
       <div
         style={{
-          opacity: phase >= 1 ? 1 : 0,
-          transform: `translateY(${phase >= 1 ? 0 : 30}px)`,
-          transition: "all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)",
+          opacity: phases[0].visible ? 1 : 0,
+          transform: `translateY(${phases[0].visible ? 0 : 30}px)`,
+          transition: `all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) ${phases[0].delay}`,
           textAlign: "center",
-          marginBottom: 28,
-          padding: "30px 16px",
-          background: "#fffbf5",
-          borderRadius: 24,
-          border: "2px solid #e8ddd0",
+          marginBottom: 24,
         }}
       >
-        <div style={{ fontSize: 48, marginBottom: 10 }}>{chosen.emoji}</div>
         <div
           style={{
-            fontFamily: "'Sigmar', cursive",
-            fontSize: 24,
-            color: "#4a3f35",
-            fontStyle: "italic",
-            marginBottom: 6,
-            lineHeight: 1.2,
+            ...panelStyles.strong,
+            position: "relative",
+            overflow: "hidden",
+            padding: "28px 18px",
           }}
         >
-          You chose to {chosen.label.toLowerCase()}
+          <div
+            style={{
+              position: "absolute",
+              top: -40,
+              right: -28,
+              width: 130,
+              height: 130,
+              borderRadius: "50%",
+              background: alpha(chosen.color, 0.12),
+            }}
+          />
+          <div
+            style={{
+              width: 66,
+              height: 66,
+              margin: "0 auto 12px",
+              borderRadius: 22,
+              background: `linear-gradient(180deg, ${alpha(
+                chosen.color,
+                0.18,
+              )}, ${alpha(chosen.color, 0.1)})`,
+              border: `1px solid ${alpha(chosen.color, 0.28)}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 36,
+              boxShadow: votingTheme.shadow.inset,
+            }}
+          >
+            {chosen.emoji}
+          </div>
+          <div
+            style={{
+              ...textStyles.sectionTitle,
+              fontSize: 26,
+              marginBottom: 8,
+            }}
+          >
+            You chose to {chosen.label.toLowerCase()}
+          </div>
+          <div
+            style={{
+              fontFamily: votingTheme.fonts.body,
+              fontSize: 15,
+              color: chosen.color,
+              fontWeight: 700,
+            }}
+          >
+            {countsLoading ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginTop: 4,
+                }}
+              >
+                <LoadingBlock width={228} height={22} borderRadius={999} />
+              </div>
+            ) : (
+              `You and ${chosenCount} others made this choice`
+            )}
+          </div>
         </div>
-        <div
-          style={{
-            fontFamily: "'Chillax', sans-serif",
-            fontSize: 16,
-            color: chosen.color,
-            fontWeight: 600,
-          }}
-        >
+      </div>
+
+      <div
+        style={{
+          opacity: phases[1].visible ? 1 : 0,
+          transform: `translateY(${phases[1].visible ? 0 : 30}px)`,
+          transition: `all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) ${phases[1].delay}`,
+          marginBottom: 24,
+        }}
+      >
+        <div style={{ ...panelStyles.base, padding: "22px 18px 18px" }}>
+          <div
+            style={{
+              ...textStyles.sectionTitle,
+              fontSize: 20,
+              textAlign: "center",
+              marginBottom: 18,
+            }}
+          >
+            How everyone voted
+          </div>
+
           {countsLoading ? (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                marginTop: 4,
-              }}
-            >
-              <LoadingBlock width={220} height={20} borderRadius={999} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {[scenario.optionA, scenario.optionB].map((option) => (
+                <div
+                  key={option.label}
+                  style={{
+                    ...panelStyles.inset,
+                    padding: "14px 14px 12px",
+                    background: alpha(votingTheme.colors.surfaceStrong, 0.72),
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 18 }}>{option.emoji}</span>
+                      <span
+                        style={{
+                          fontFamily: votingTheme.fonts.body,
+                          fontSize: 15,
+                          color: option.color,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {option.label}
+                      </span>
+                    </div>
+                    <LoadingBlock width={92} height={18} borderRadius={999} />
+                  </div>
+                  <LoadingBlock width="100%" height={42} borderRadius={20} />
+                </div>
+              ))}
             </div>
           ) : (
-            `You and ${chosenCount} others made this choice`
+            <>
+              <div
+                style={{
+                  ...panelStyles.inset,
+                  padding: "14px 14px 12px",
+                  marginBottom: 14,
+                  background: alpha(votingTheme.colors.surfaceStrong, 0.72),
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 8,
+                    gap: 10,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 18 }}>{scenario.optionA.emoji}</span>
+                    <span
+                      style={{
+                        fontFamily: votingTheme.fonts.body,
+                        fontSize: 15,
+                        color: scenario.optionA.color,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {scenario.optionA.label}
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: votingTheme.fonts.body,
+                      fontSize: 13,
+                      color: votingTheme.colors.textMuted,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {scenario.votes.a} votes
+                  </span>
+                </div>
+                {phase >= 2 && (
+                  <AnimatedBar
+                    percentage={pctA}
+                    color={scenario.optionA.color}
+                    delay={300}
+                  />
+                )}
+              </div>
+
+              <div
+                style={{
+                  ...panelStyles.inset,
+                  padding: "14px 14px 12px",
+                  background: alpha(votingTheme.colors.surfaceStrong, 0.72),
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 8,
+                    gap: 10,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 18 }}>{scenario.optionB.emoji}</span>
+                    <span
+                      style={{
+                        fontFamily: votingTheme.fonts.body,
+                        fontSize: 15,
+                        color: scenario.optionB.color,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {scenario.optionB.label}
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: votingTheme.fonts.body,
+                      fontSize: 13,
+                      color: votingTheme.colors.textMuted,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {scenario.votes.b} votes
+                  </span>
+                </div>
+                {phase >= 2 && (
+                  <AnimatedBar
+                    percentage={pctB}
+                    color={scenario.optionB.color}
+                    delay={600}
+                  />
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
 
       <div
         style={{
-          opacity: phase >= 2 ? 1 : 0,
-          transform: `translateY(${phase >= 2 ? 0 : 30}px)`,
-          transition: "all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s",
-          marginBottom: 28,
-          background: "#fffbf5",
-          borderRadius: 24,
-          padding: "24px 20px",
-          border: "2px solid #e8ddd0",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "'Sigmar', cursive",
-            fontSize: 18,
-            color: "#4a3f35",
-            fontStyle: "italic",
-            textAlign: "center",
-            marginBottom: 20,
-          }}
-        >
-          How everyone voted
-        </div>
-
-        {countsLoading ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            {[scenario.optionA, scenario.optionB].map((option) => (
-              <div key={option.label}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 10,
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 18 }}>{option.emoji}</span>
-                    <span
-                      style={{
-                        fontFamily: "'Chillax', sans-serif",
-                        fontSize: 15,
-                        color: option.color,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {option.label}
-                    </span>
-                  </div>
-                  <LoadingBlock width={88} height={18} borderRadius={999} />
-                </div>
-                <LoadingBlock width="100%" height={36} borderRadius={18} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <>
-            <div style={{ marginBottom: 16 }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 6,
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 18 }}>{scenario.optionA.emoji}</span>
-                  <span
-                    style={{
-                      fontFamily: "'Chillax', sans-serif",
-                      fontSize: 15,
-                      color: scenario.optionA.color,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {scenario.optionA.label}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontFamily: "'Chillax', sans-serif",
-                    fontSize: 14,
-                    color: "#8b7355",
-                    fontWeight: 600,
-                  }}
-                >
-                  {scenario.votes.a} votes
-                </span>
-              </div>
-              {phase >= 2 && (
-                <AnimatedBar
-                  percentage={pctA}
-                  color={scenario.optionA.color}
-                  delay={300}
-                />
-              )}
-            </div>
-
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 6,
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 18 }}>{scenario.optionB.emoji}</span>
-                  <span
-                    style={{
-                      fontFamily: "'Chillax', sans-serif",
-                      fontSize: 15,
-                      color: scenario.optionB.color,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {scenario.optionB.label}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontFamily: "'Chillax', sans-serif",
-                    fontSize: 14,
-                    color: "#8b7355",
-                    fontWeight: 600,
-                  }}
-                >
-                  {scenario.votes.b} votes
-                </span>
-              </div>
-              {phase >= 2 && (
-                <AnimatedBar
-                  percentage={pctB}
-                  color={scenario.optionB.color}
-                  delay={600}
-                />
-              )}
-            </div>
-          </>
-        )}
-      </div>
-
-      <div
-        style={{
-          opacity: phase >= 3 ? 1 : 0,
-          transform: `translateY(${phase >= 3 ? 0 : 30}px)`,
+          opacity: phases[2].visible ? 1 : 0,
+          transform: `translateY(${phases[2].visible ? 0 : 30}px)`,
           transition: "all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)",
-          marginBottom: 28,
+          marginBottom: 24,
         }}
       >
-        <div
-          style={{
-            fontFamily: "'Sigmar', cursive",
-            fontSize: 20,
-            color: "#4a3f35",
-            fontStyle: "italic",
-            textAlign: "center",
-            marginBottom: 6,
-          }}
-        >
-          What does the research say?
-        </div>
-        <div
-          style={{
-            fontFamily: "'Chillax', sans-serif",
-            fontSize: 13,
-            color: "#c4b49e",
-            textAlign: "center",
-            marginBottom: 16,
-            fontWeight: 600,
-          }}
-        >
-          Tap each card to reveal the evidence
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <div
+            style={{
+              ...textStyles.sectionTitle,
+              fontSize: 21,
+              marginBottom: 6,
+            }}
+          >
+            What does the research say?
+          </div>
+          <div
+            style={{
+              fontFamily: votingTheme.fonts.body,
+              fontSize: 13,
+              color: votingTheme.colors.textSoft,
+              fontWeight: 700,
+            }}
+          >
+            Tap each card to reveal the evidence
+          </div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -290,20 +366,19 @@ export default function RevealFlow({ scenario, choice, countsLoading }) {
 
       <div
         style={{
-          opacity: phase >= 4 ? 1 : 0,
-          transform: `translateY(${phase >= 4 ? 0 : 30}px)`,
+          opacity: phases[3].visible ? 1 : 0,
+          transform: `translateY(${phases[3].visible ? 0 : 30}px)`,
           transition: "all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)",
           marginBottom: 20,
         }}
       >
         <div
           style={{
+            ...panelStyles.strong,
             position: "relative",
-            background: "#fffbf5",
-            borderRadius: 24,
-            padding: "24px 22px",
-            border: "2px dashed #d4c4a8",
             overflow: "hidden",
+            padding: "24px 22px",
+            borderStyle: "dashed",
           }}
         >
           <div
@@ -311,64 +386,66 @@ export default function RevealFlow({ scenario, choice, countsLoading }) {
               position: "absolute",
               top: -30,
               right: -30,
-              width: 100,
-              height: 100,
+              width: 116,
+              height: 116,
               borderRadius: "50%",
-              background: "rgba(196,90,60,0.05)",
+              background: alpha(votingTheme.colors.clay, 0.08),
             }}
           />
           <div
             style={{
-              fontFamily: "'Chillax', sans-serif",
-              fontSize: 12,
-              color: "#c4b49e",
-              letterSpacing: 3,
-              textTransform: "uppercase",
-              marginBottom: 6,
-              fontWeight: 700,
+              ...panelStyles.chip,
+              display: "inline-flex",
+              padding: "5px 12px",
+              marginBottom: 10,
+              background: alpha(votingTheme.colors.brass, 0.12),
             }}
           >
-            💡 Did you know?
+            <span style={{ ...textStyles.eyebrow, color: votingTheme.colors.textSoft }}>
+              💡 Did you know?
+            </span>
           </div>
           <div
             style={{
-              fontFamily: "'Sigmar', cursive",
-              fontSize: 22,
-              color: "#c45a3c",
-              fontStyle: "italic",
+              ...textStyles.sectionTitle,
+              fontSize: 24,
+              color: votingTheme.colors.clay,
               marginBottom: 10,
-              lineHeight: 1.2,
             }}
           >
             This is called {scenario.bias.name}
           </div>
           <p
             style={{
-              fontFamily: "'Chillax', sans-serif",
+              ...textStyles.body,
               fontSize: 14,
-              color: "#5a4e42",
-              lineHeight: 1.7,
-              margin: "0 0 10px",
+              color: votingTheme.colors.textMuted,
+              margin: "0 0 12px",
             }}
           >
             {scenario.bias.description}
           </p>
           <div
             style={{
-              display: "inline-block",
-              padding: "5px 14px",
-              background: "#f5ead6",
-              borderRadius: 20,
-              fontFamily: "'Chillax', sans-serif",
-              fontSize: 13,
-              color: "#8b7355",
-              fontWeight: 600,
+              ...panelStyles.chip,
+              display: "inline-flex",
+              padding: "5px 13px",
+              background: alpha(votingTheme.colors.surfaceSoft, 0.92),
             }}
           >
-            — {scenario.bias.source}
+            <span
+              style={{
+                fontFamily: votingTheme.fonts.body,
+                fontSize: 12,
+                color: votingTheme.colors.textMuted,
+                fontWeight: 700,
+              }}
+            >
+              — {scenario.bias.source}
+            </span>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
