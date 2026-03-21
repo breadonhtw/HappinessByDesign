@@ -1,3 +1,4 @@
+import React from "react"
 import { useEffect, useState } from "react"
 
 import { alpha, panelStyles, votingTheme } from "./designSystem"
