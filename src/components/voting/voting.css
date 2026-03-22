@@ -457,6 +457,9 @@
   align-items: center;
   gap: 12px;
   flex: 1;
+  transition:
+    gap 0.2s ease,
+    transform 0.2s ease;
 }
 
 .tap-option__emoji {
@@ -470,6 +473,7 @@
   background: var(--option-emoji-background);
   transform: scale(var(--option-emoji-scale));
   transition:
+    opacity 0.2s ease,
     transform 0.2s ease,
     background-color 0.2s ease;
   font-size: 24px;
@@ -478,11 +482,13 @@
 .tap-option:active:not(:disabled) .tap-option__emoji,
 .tap-option:not(:disabled):focus-visible .tap-option__emoji {
   background: var(--option-hover-emoji-background);
-  transform: scale(1.06);
+  opacity: 0.58;
+  transform: scale(0.92);
 }
 
 .tap-option__copy {
   min-width: 0;
+  transition: transform 0.2s ease;
 }
 
 .tap-option__label {
@@ -490,12 +496,21 @@
   color: var(--option-color);
   font-size: 13px;
   font-weight: 700;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    color 0.2s ease;
 }
 
 .tap-option__text {
   color: var(--color-text);
   font-size: 14px;
   line-height: 1.5;
+  transform-origin: left center;
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .tap-option__indicator {
@@ -505,6 +520,9 @@
   flex-shrink: 0;
   margin-left: 8px;
   opacity: var(--option-indicator-opacity);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .tap-option__indicator-ring {
@@ -537,6 +555,35 @@
   box-shadow: var(--option-hover-indicator-shadow);
 }
 
+.tap-option:active:not(:disabled) .tap-option__content,
+.tap-option:not(:disabled):focus-visible .tap-option__content {
+  gap: 10px;
+  transform: translateX(4px);
+}
+
+.tap-option:active:not(:disabled) .tap-option__copy,
+.tap-option:not(:disabled):focus-visible .tap-option__copy {
+  transform: translateX(2px);
+}
+
+.tap-option:active:not(:disabled) .tap-option__label,
+.tap-option:not(:disabled):focus-visible .tap-option__label {
+  opacity: 0.42;
+  transform: translateY(-1px) scale(0.96);
+}
+
+.tap-option:active:not(:disabled) .tap-option__text,
+.tap-option:not(:disabled):focus-visible .tap-option__text {
+  color: var(--option-color);
+  transform: scale(1.06);
+}
+
+.tap-option:active:not(:disabled) .tap-option__indicator,
+.tap-option:not(:disabled):focus-visible .tap-option__indicator {
+  opacity: 0.42;
+  transform: scale(0.88);
+}
+
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .tap-option:not(:disabled):hover {
     background: linear-gradient(
@@ -550,7 +597,8 @@
 
   .tap-option:not(:disabled):hover .tap-option__emoji {
     background: var(--option-hover-emoji-background);
-    transform: scale(1.06);
+    opacity: 0.58;
+    transform: scale(0.92);
   }
 
   .tap-option:not(:disabled):hover .tap-option__indicator-ring {
@@ -561,6 +609,30 @@
   .tap-option:not(:disabled):hover .tap-option__indicator-dot {
     transform: scale(1.15);
     box-shadow: var(--option-hover-indicator-shadow);
+  }
+
+  .tap-option:not(:disabled):hover .tap-option__content {
+    gap: 10px;
+    transform: translateX(4px);
+  }
+
+  .tap-option:not(:disabled):hover .tap-option__copy {
+    transform: translateX(2px);
+  }
+
+  .tap-option:not(:disabled):hover .tap-option__label {
+    opacity: 0.42;
+    transform: translateY(-1px) scale(0.96);
+  }
+
+  .tap-option:not(:disabled):hover .tap-option__text {
+    color: var(--option-color);
+    transform: scale(1.06);
+  }
+
+  .tap-option:not(:disabled):hover .tap-option__indicator {
+    opacity: 0.42;
+    transform: scale(0.88);
   }
 
   .tap-option[data-idle="true"] .tap-option__emoji {
