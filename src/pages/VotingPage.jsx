@@ -9,6 +9,7 @@ import {
   votingTheme,
 } from "../components/voting/designSystem";
 import RevealFlow from "../components/voting/RevealFlow";
+import StationProgressIndicator from "../components/voting/StationProgressIndicator";
 import SwipeCard from "../components/voting/SwipeCard";
 import { VOTE_API_CONFIG_ERROR, VOTE_API_URL } from "../config";
 import { SCENARIOS } from "../data/scenarios";
@@ -45,7 +46,7 @@ function buildGuidance(entryContext) {
     entryContext.nextIncompleteStation !== null
   ) {
     return {
-      accent: votingTheme.colors.moss,
+      accent: votingTheme.colors.brass,
       eyebrow: "Already completed",
       title: `You've already completed Station ${entryContext.currentStation}`,
       body: `You can revisit this stop or continue with Station ${entryContext.nextIncompleteStation}.`,
@@ -56,7 +57,7 @@ function buildGuidance(entryContext) {
 
   if (entryContext.isCurrentCompleted) {
     return {
-      accent: votingTheme.colors.moss,
+      accent: votingTheme.colors.brass,
       eyebrow: "Already completed",
       title: `Station ${entryContext.currentStation} is done`,
       body: "All stations on this device are already completed.",
@@ -92,12 +93,13 @@ export default function VotingPage() {
   const scenario = SCENARIOS[station];
   const entryContext = getStationEntryContext(station, SCENARIOS);
   const guidance = buildGuidance(entryContext);
-  const completedStationSet = new Set(entryContext.completedStations);
   const hasPriorGap = entryContext.priorIncompleteStation !== null;
   const nextStationCta =
     entryContext.isCurrentCompleted && !hasPriorGap
       ? entryContext.nextIncompleteStation
       : null;
+  const showGuidanceAction =
+    guidance?.actionStation !== null && nextStationCta === null;
 
   useEffect(() => {
     if (!requestedStationState.invalidStation) {
@@ -391,59 +393,15 @@ export default function VotingPage() {
           <div
             style={{
               ...panelStyles.base,
-              padding: "12px 14px",
+              padding: "16px 18px",
               borderRadius: votingTheme.radius.card,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                justifyContent: "center",
-              }}
-            >
-              {stationRail.map((s) => {
-                const isCurrent = station === s;
-                const isCompleted = completedStationSet.has(s);
-
-                return (
-                  <button
-                    key={s}
-                    aria-label={`Go to Station ${s}`}
-                    onClick={() => goToStation(s)}
-                    style={{
-                      flex: 1,
-                      maxWidth: 110,
-                      padding: "8px 6px",
-                      borderRadius: 16,
-                      border: `1px solid ${isCurrent ? alpha(votingTheme.colors.clay, 0.45) : alpha(votingTheme.colors.borderStrong, 0.45)}`,
-                      background: isCurrent
-                        ? alpha(votingTheme.colors.clay, 0.1)
-                        : alpha(votingTheme.colors.surfaceStrong, 0.55),
-                      cursor: "pointer",
-                      transition: "all 0.25s ease",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: 7,
-                        borderRadius: votingTheme.radius.chip,
-                        border: "none",
-                        background:
-                          isCurrent || isCompleted
-                            ? `linear-gradient(90deg, ${votingTheme.colors.clayDark}, ${votingTheme.colors.clay})`
-                            : alpha(votingTheme.colors.borderStrong, 0.35),
-                        boxShadow:
-                          isCurrent || isCompleted
-                            ? `0 6px 14px ${alpha(votingTheme.colors.clayDark, 0.18)}`
-                            : "none",
-                        padding: 0,
-                      }}
-                    />
-                  </button>
-                );
-              })}
-            </div>
+            <StationProgressIndicator
+              stationIds={stationRail}
+              currentStation={station}
+              completedStations={entryContext.completedStations}
+            />
           </div>
         </div>
 
@@ -530,7 +488,7 @@ export default function VotingPage() {
               >
                 {guidance.body}
               </p>
-              {guidance.actionStation !== null ? (
+              {showGuidanceAction ? (
                 <button
                   onClick={() => goToStation(guidance.actionStation)}
                   style={{

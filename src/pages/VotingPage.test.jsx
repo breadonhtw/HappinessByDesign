@@ -36,6 +36,23 @@ describe("VotingPage QR progression", () => {
     vi.restoreAllMocks()
   })
 
+  it("renders a non-interactive progress tracker for the current and upcoming stations", async () => {
+    renderAppAt("/vote?station=1")
+
+    expect(
+      screen.getByRole("list", {
+        name: "Trail progress: 0 of 3 stations completed",
+      }),
+    ).toBeTruthy()
+    expect(screen.queryByLabelText("Go to Station 1")).toBeNull()
+    expect(screen.getByLabelText("Station 1: current")).toBeTruthy()
+    expect(
+      screen.getByLabelText("Station 1: current").getAttribute("aria-current"),
+    ).toBe("step")
+    expect(screen.getByLabelText("Station 2: upcoming")).toBeTruthy()
+    expect(screen.getByLabelText("Station 3: upcoming")).toBeTruthy()
+  })
+
   it("shows prior-station guidance for out-of-order QR entry", async () => {
     renderAppAt("/vote?station=2")
 
@@ -59,14 +76,15 @@ describe("VotingPage QR progression", () => {
     ).toBeNull()
   })
 
-  it("shows continue guidance for a completed station only when prior stations are done", async () => {
+  it("shows completed-station guidance without duplicating the primary next-step CTA", async () => {
     markComplete(1)
     renderAppAt("/vote?station=1")
 
     expect(
       screen.getByText("You've already completed Station 1"),
     ).toBeTruthy()
-    expect(screen.getAllByText("Continue to Station 2").length).toBeGreaterThan(0)
+    expect(screen.queryByText("Continue to Station 2")).toBeNull()
+    expect(screen.getByText("Walk to Station 2 →")).toBeTruthy()
   })
 
   it("shows an invalid-link notice and safe fallback for malformed QR params", async () => {
@@ -77,13 +95,15 @@ describe("VotingPage QR progression", () => {
       screen.getByText(/This QR code points to an invalid station/i),
     ).toBeTruthy()
     expect(screen.getByText(/Station 1 · SPARKS/i)).toBeTruthy()
+    expect(screen.getByLabelText("Station 1: current")).toBeTruthy()
   })
 
   it("restores station view with browser back navigation", async () => {
     const user = userEvent.setup()
+    markComplete(1)
     renderAppAt("/vote?station=1")
 
-    await user.click(screen.getByLabelText("Go to Station 2"))
+    await user.click(screen.getByText("Walk to Station 2 →"))
     expect(screen.getByText(/Station 2 · mph \/ Opp Sheng Siong/i)).toBeTruthy()
 
     await act(async () => {
@@ -114,6 +134,19 @@ describe("VotingPage QR progression", () => {
         screen.getByText("You've already completed Station 2"),
       ).toBeTruthy()
     })
+    expect(screen.getByLabelText("Station 1: completed")).toBeTruthy()
+    expect(
+      screen.getByLabelText("Station 2: completed, current station"),
+    ).toBeTruthy()
+  })
+
+  it("shows completed progress for finished stations", async () => {
+    markComplete(1)
+    renderAppAt("/vote?station=2")
+
+    expect(screen.getByLabelText("Station 1: completed")).toBeTruthy()
+    expect(screen.getByLabelText("Station 2: current")).toBeTruthy()
+    expect(screen.getByLabelText("Station 3: upcoming")).toBeTruthy()
   })
 
   it("submits votes as a CORS-simple text payload", async () => {
