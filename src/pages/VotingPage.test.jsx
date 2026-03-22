@@ -15,19 +15,20 @@ function renderAppAt(path) {
   return render(<App />)
 }
 
-async function swipeRight(container) {
-  const draggable = [...container.querySelectorAll("div")].find(
-    (element) => element.style.cursor === "grab",
-  )
+function getChoiceButton(choice) {
+  return screen.getByRole("button", {
+    name: new RegExp(`^Choose Option ${choice}:`, "i"),
+  })
+}
 
-  expect(draggable).toBeTruthy()
+async function pressAndReleaseChoice(choice) {
+  const button = getChoiceButton(choice)
 
-  fireEvent.mouseDown(draggable, { clientX: 0 })
-  fireEvent.mouseMove(draggable, { clientX: 140 })
-  fireEvent.mouseUp(draggable, { clientX: 140 })
+  fireEvent.pointerDown(button)
+  fireEvent.pointerUp(button)
 
   await act(async () => {
-    await new Promise((resolve) => window.setTimeout(resolve, 400))
+    await new Promise((resolve) => window.setTimeout(resolve, 20))
   })
 }
 
@@ -51,6 +52,20 @@ describe("VotingPage QR progression", () => {
     ).toBe("step")
     expect(screen.getByLabelText("Station 2: upcoming")).toBeTruthy()
     expect(screen.getByLabelText("Station 3: upcoming")).toBeTruthy()
+    expect(
+      screen.getByRole("button", { name: /^Choose Option A:/i }),
+    ).toBeTruthy()
+    expect(
+      screen.getByRole("button", { name: /^Choose Option B:/i }),
+    ).toBeTruthy()
+    expect(screen.queryByText("Tap an option to choose")).toBeNull()
+    expect(screen.queryByText(/swipe/i)).toBeNull()
+
+    await pressAndReleaseChoice("B")
+
+    await waitFor(() => {
+      expect(screen.getByText(/The Loneliness Loop/i)).toBeTruthy()
+    })
   })
 
   it("shows prior-station guidance for out-of-order QR entry", async () => {
@@ -257,9 +272,9 @@ describe("VotingPage QR progression", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { container } = renderAppAt("/vote?station=1")
+    renderAppAt("/vote?station=1")
 
-    await swipeRight(container)
+    await pressAndReleaseChoice("A")
 
     const postCall = fetchMock.mock.calls.find(([, init]) => init?.method === "POST")
 
@@ -285,9 +300,9 @@ describe("VotingPage QR progression", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { container } = renderAppAt("/vote?station=1")
+    renderAppAt("/vote?station=1")
 
-    await swipeRight(container)
+    await pressAndReleaseChoice("A")
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeTruthy()
@@ -298,5 +313,43 @@ describe("VotingPage QR progression", () => {
         "Your choice is saved on this device, but the vote server did not confirm it. Retry to sync it.",
       ),
     ).toBeTruthy()
+  })
+
+  it("does not submit on press-down until the user releases", async () => {
+    const fetchMock = vi.fn((_, init) => {
+      if (!init) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ 1: { a: 3, b: 0 }, 2: { a: 0, b: 1 }, 3: { a: 0, b: 0 } }),
+        })
+      }
+
+      return Promise.resolve({
+        ok: true,
+        text: async () => JSON.stringify({ success: true }),
+      })
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    renderAppAt("/vote?station=1")
+
+    fireEvent.pointerDown(getChoiceButton("A"))
+
+    expect(
+      fetchMock.mock.calls.find(([, init]) => init?.method === "POST"),
+    ).toBeUndefined()
+
+    await act(async () => {
+      await new Promise((resolve) => window.setTimeout(resolve, 20))
+    })
+
+    fireEvent.pointerUp(getChoiceButton("A"))
+
+    await waitFor(() => {
+      const postCalls = fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")
+      expect(postCalls.length).toBe(1)
+      expect(postCalls[0][1].body).toBe(JSON.stringify({ station: 1, choice: "a" }))
+    })
   })
 })
