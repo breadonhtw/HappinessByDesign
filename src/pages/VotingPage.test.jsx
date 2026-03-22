@@ -75,7 +75,7 @@ describe("VotingPage QR progression", () => {
     ).toBeTruthy()
     expect(screen.getByText("Go to Station 1 first")).toBeTruthy()
     expect(screen.queryByText(/Continue to Station/i)).toBeNull()
-    expect(screen.queryByText(/Walk to Station/i)).toBeNull()
+    expect(screen.queryByText(/Head to Station/i)).toBeNull()
     expect(screen.getByTestId("station-marker-1").getAttribute("data-state")).toBe(
       "upcoming",
     )
@@ -98,7 +98,7 @@ describe("VotingPage QR progression", () => {
       screen.getByText("Station 1 is still incomplete"),
     ).toBeTruthy()
     expect(
-      screen.queryByText("Head to Dakota Breeze RN Lobby"),
+      screen.queryByText("Head to Dakota Breeze Residential Network Lobby"),
     ).toBeNull()
     expect(screen.getByTestId("station-marker-3").getAttribute("data-state")).toBe(
       "completed-current",
@@ -119,7 +119,8 @@ describe("VotingPage QR progression", () => {
       screen.getByText("You've already completed Station 1"),
     ).toBeTruthy()
     expect(screen.queryByText("Continue to Station 2")).toBeNull()
-    expect(screen.getByText("Walk to Station 2 →")).toBeTruthy()
+    expect(screen.getByText("Head to Station 2")).toBeTruthy()
+    expect(screen.getByRole("button", { name: "Go to Station 2" })).toBeTruthy()
   })
 
   it("shows an invalid-link notice and safe fallback for malformed QR params", async () => {
@@ -138,7 +139,7 @@ describe("VotingPage QR progression", () => {
     markComplete(1)
     renderAppAt("/vote?station=1")
 
-    await user.click(screen.getByText("Walk to Station 2 →"))
+    await user.click(screen.getByRole("button", { name: "Go to Station 2" }))
     expect(screen.getByText(/Station 2 · mph \/ Opp Sheng Siong/i)).toBeTruthy()
 
     await act(async () => {
@@ -211,7 +212,7 @@ describe("VotingPage QR progression", () => {
 
     expect(screen.getByText("Station 1 is still incomplete")).toBeTruthy()
     expect(screen.getByText("Go to Station 1 first")).toBeTruthy()
-    expect(screen.queryByText(/Walk to Station/i)).toBeNull()
+    expect(screen.queryByText(/Head to Station/i)).toBeNull()
     expect(screen.getByTestId("station-marker-1").getAttribute("data-state")).toBe(
       "upcoming",
     )
@@ -233,9 +234,9 @@ describe("VotingPage QR progression", () => {
 
     expect(screen.getByText("Station 2 is still incomplete")).toBeTruthy()
     expect(screen.getByText("Go to Station 2 first")).toBeTruthy()
-    expect(screen.queryByText(/Walk to Station/i)).toBeNull()
+    expect(screen.queryByText(/Head to Station/i)).toBeNull()
     expect(
-      screen.queryByText("Head to Dakota Breeze RN Lobby"),
+      screen.queryByText("Head to Dakota Breeze Residential Network Lobby"),
     ).toBeNull()
     expect(screen.getByTestId("station-marker-1").getAttribute("data-state")).toBe(
       "completed",
