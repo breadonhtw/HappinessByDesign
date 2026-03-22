@@ -7,8 +7,8 @@ import {
   textStyles,
   votingTheme,
 } from "./designSystem"
-import AnimatedBar from "./AnimatedBar"
 import EvidenceCard from "./EvidenceCard"
+import SplitVoteBar, { SplitVoteBarSkeleton } from "./SplitVoteBar"
 
 function LoadingBlock({ width = "100%", height = 16, borderRadius = 10 }) {
   return (
@@ -176,146 +176,23 @@ export default function RevealFlow({ scenario, choice, countsLoading }) {
             How everyone voted
           </div>
 
-          {countsLoading ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {[scenario.optionA, scenario.optionB].map((option) => (
-                <div
-                  key={option.label}
-                  style={{
-                    ...panelStyles.inset,
-                    padding: "14px 14px 12px",
-                    background: alpha(votingTheme.colors.surfaceStrong, 0.72),
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: 10,
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 18 }}>{option.emoji}</span>
-                      <span
-                        style={{
-                          fontFamily: votingTheme.fonts.body,
-                          fontSize: 15,
-                          color: option.color,
-                          fontWeight: 700,
-                        }}
-                      >
-                        {option.label}
-                      </span>
-                    </div>
-                    <LoadingBlock width={92} height={18} borderRadius={999} />
-                  </div>
-                  <LoadingBlock width="100%" height={42} borderRadius={20} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <>
-              <div
-                style={{
-                  ...panelStyles.inset,
-                  padding: "14px 14px 12px",
-                  marginBottom: 14,
-                  background: alpha(votingTheme.colors.surfaceStrong, 0.72),
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 8,
-                    gap: 10,
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 18 }}>{scenario.optionA.emoji}</span>
-                    <span
-                      style={{
-                        fontFamily: votingTheme.fonts.body,
-                        fontSize: 15,
-                        color: scenario.optionA.color,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {scenario.optionA.label}
-                    </span>
-                  </div>
-                  <span
-                    style={{
-                      fontFamily: votingTheme.fonts.body,
-                      fontSize: 13,
-                      color: votingTheme.colors.textMuted,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {scenario.votes.a} votes
-                  </span>
-                </div>
-                {phase >= 2 && (
-                  <AnimatedBar
-                    percentage={pctA}
-                    color={scenario.optionA.color}
-                    delay={300}
-                  />
-                )}
-              </div>
-
-              <div
-                style={{
-                  ...panelStyles.inset,
-                  padding: "14px 14px 12px",
-                  background: alpha(votingTheme.colors.surfaceStrong, 0.72),
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 8,
-                    gap: 10,
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 18 }}>{scenario.optionB.emoji}</span>
-                    <span
-                      style={{
-                        fontFamily: votingTheme.fonts.body,
-                        fontSize: 15,
-                        color: scenario.optionB.color,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {scenario.optionB.label}
-                    </span>
-                  </div>
-                  <span
-                    style={{
-                      fontFamily: votingTheme.fonts.body,
-                      fontSize: 13,
-                      color: votingTheme.colors.textMuted,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {scenario.votes.b} votes
-                  </span>
-                </div>
-                {phase >= 2 && (
-                  <AnimatedBar
-                    percentage={pctB}
-                    color={scenario.optionB.color}
-                    delay={600}
-                  />
-                )}
-              </div>
-            </>
-          )}
+          {countsLoading
+            ? phase >= 2
+              ? <SplitVoteBarSkeleton />
+              : null
+            : phase >= 2
+              ? (
+                <SplitVoteBar
+                  optionA={scenario.optionA}
+                  optionB={scenario.optionB}
+                  votesA={scenario.votes.a}
+                  votesB={scenario.votes.b}
+                  pctA={pctA}
+                  pctB={pctB}
+                  choice={choice}
+                />
+                )
+              : null}
         </div>
       </div>
 
