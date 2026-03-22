@@ -10,7 +10,7 @@ import {
 } from "../components/voting/designSystem";
 import RevealFlow from "../components/voting/RevealFlow";
 import StationProgressIndicator from "../components/voting/StationProgressIndicator";
-import SwipeCard from "../components/voting/SwipeCard";
+import TapCard from "../components/voting/TapCard";
 import { VOTE_API_CONFIG_ERROR, VOTE_API_URL } from "../config";
 import { SCENARIOS } from "../data/scenarios";
 import {
@@ -579,7 +579,7 @@ export default function VotingPage() {
         ) : null}
 
         {!choice ? (
-          <SwipeCard scenario={currentScenario} onChoice={handleChoice} />
+          <TapCard scenario={currentScenario} onChoice={handleChoice} />
         ) : (
           <RevealFlow
             scenario={currentScenario}
