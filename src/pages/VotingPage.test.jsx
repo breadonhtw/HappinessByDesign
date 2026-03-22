@@ -36,6 +36,23 @@ describe("VotingPage QR progression", () => {
     vi.restoreAllMocks()
   })
 
+  it("renders a non-interactive progress tracker for the current and upcoming stations", async () => {
+    renderAppAt("/vote?station=1")
+
+    expect(
+      screen.getByRole("list", {
+        name: "Trail progress: 0 of 3 stations completed",
+      }),
+    ).toBeTruthy()
+    expect(screen.queryByLabelText("Go to Station 1")).toBeNull()
+    expect(screen.getByLabelText("Station 1: current")).toBeTruthy()
+    expect(
+      screen.getByLabelText("Station 1: current").getAttribute("aria-current"),
+    ).toBe("step")
+    expect(screen.getByLabelText("Station 2: upcoming")).toBeTruthy()
+    expect(screen.getByLabelText("Station 3: upcoming")).toBeTruthy()
+  })
+
   it("shows prior-station guidance for out-of-order QR entry", async () => {
     renderAppAt("/vote?station=2")
 
@@ -45,6 +62,18 @@ describe("VotingPage QR progression", () => {
     expect(screen.getByText("Go to Station 1 first")).toBeTruthy()
     expect(screen.queryByText(/Continue to Station/i)).toBeNull()
     expect(screen.queryByText(/Walk to Station/i)).toBeNull()
+    expect(screen.getByTestId("station-marker-1").getAttribute("data-state")).toBe(
+      "upcoming",
+    )
+    expect(screen.getByTestId("station-marker-2").getAttribute("data-state")).toBe(
+      "current",
+    )
+    expect(screen.getByTestId("connector-from-1").getAttribute("data-state")).toBe(
+      "empty",
+    )
+    expect(screen.getByTestId("connector-from-2").getAttribute("data-state")).toBe(
+      "empty",
+    )
   })
 
   it("does not show the final completion card when last station is done first", async () => {
@@ -57,16 +86,26 @@ describe("VotingPage QR progression", () => {
     expect(
       screen.queryByText("Head to Dakota Breeze RN Lobby"),
     ).toBeNull()
+    expect(screen.getByTestId("station-marker-3").getAttribute("data-state")).toBe(
+      "completed-current",
+    )
+    expect(screen.getByTestId("connector-from-1").getAttribute("data-state")).toBe(
+      "empty",
+    )
+    expect(screen.getByTestId("connector-from-2").getAttribute("data-state")).toBe(
+      "empty",
+    )
   })
 
-  it("shows continue guidance for a completed station only when prior stations are done", async () => {
+  it("shows completed-station guidance without duplicating the primary next-step CTA", async () => {
     markComplete(1)
     renderAppAt("/vote?station=1")
 
     expect(
       screen.getByText("You've already completed Station 1"),
     ).toBeTruthy()
-    expect(screen.getAllByText("Continue to Station 2").length).toBeGreaterThan(0)
+    expect(screen.queryByText("Continue to Station 2")).toBeNull()
+    expect(screen.getByText("Walk to Station 2 →")).toBeTruthy()
   })
 
   it("shows an invalid-link notice and safe fallback for malformed QR params", async () => {
@@ -77,13 +116,15 @@ describe("VotingPage QR progression", () => {
       screen.getByText(/This QR code points to an invalid station/i),
     ).toBeTruthy()
     expect(screen.getByText(/Station 1 · SPARKS/i)).toBeTruthy()
+    expect(screen.getByLabelText("Station 1: current")).toBeTruthy()
   })
 
   it("restores station view with browser back navigation", async () => {
     const user = userEvent.setup()
+    markComplete(1)
     renderAppAt("/vote?station=1")
 
-    await user.click(screen.getByLabelText("Go to Station 2"))
+    await user.click(screen.getByText("Walk to Station 2 →"))
     expect(screen.getByText(/Station 2 · mph \/ Opp Sheng Siong/i)).toBeTruthy()
 
     await act(async () => {
@@ -114,6 +155,89 @@ describe("VotingPage QR progression", () => {
         screen.getByText("You've already completed Station 2"),
       ).toBeTruthy()
     })
+    expect(screen.getByLabelText("Station 1: completed")).toBeTruthy()
+    expect(
+      screen.getByLabelText("Station 2: completed, current station"),
+    ).toBeTruthy()
+    expect(screen.getByTestId("station-marker-2").getAttribute("data-state")).toBe(
+      "completed-current",
+    )
+    expect(screen.getByTestId("connector-from-1").getAttribute("data-state")).toBe(
+      "filled",
+    )
+    expect(screen.getByTestId("connector-from-2").getAttribute("data-state")).toBe(
+      "filled",
+    )
+  })
+
+  it("shows completed progress for finished stations", async () => {
+    markComplete(1)
+    renderAppAt("/vote?station=2")
+
+    expect(screen.getByLabelText("Station 1: completed")).toBeTruthy()
+    expect(screen.getByLabelText("Station 2: current")).toBeTruthy()
+    expect(screen.getByLabelText("Station 3: upcoming")).toBeTruthy()
+    expect(screen.getByTestId("station-marker-1").getAttribute("data-state")).toBe(
+      "completed",
+    )
+    expect(screen.getByTestId("station-marker-2").getAttribute("data-state")).toBe(
+      "current",
+    )
+    expect(screen.getByTestId("connector-from-1").getAttribute("data-state")).toBe(
+      "filled",
+    )
+    expect(screen.getByTestId("connector-from-2").getAttribute("data-state")).toBe(
+      "empty",
+    )
+  })
+
+  it("shows raw completion for station 2 while guidance still points back to station 1", async () => {
+    markComplete(2, "b")
+    renderAppAt("/vote?station=2")
+
+    expect(screen.getByText("Station 1 is still incomplete")).toBeTruthy()
+    expect(screen.getByText("Go to Station 1 first")).toBeTruthy()
+    expect(screen.queryByText(/Walk to Station/i)).toBeNull()
+    expect(screen.getByTestId("station-marker-1").getAttribute("data-state")).toBe(
+      "upcoming",
+    )
+    expect(screen.getByTestId("station-marker-2").getAttribute("data-state")).toBe(
+      "completed-current",
+    )
+    expect(screen.getByTestId("connector-from-1").getAttribute("data-state")).toBe(
+      "empty",
+    )
+    expect(screen.getByTestId("connector-from-2").getAttribute("data-state")).toBe(
+      "filled",
+    )
+  })
+
+  it("shows station 3 as completed while preserving the earliest prior-gap guidance", async () => {
+    markComplete(1)
+    markComplete(3, "b")
+    renderAppAt("/vote?station=3")
+
+    expect(screen.getByText("Station 2 is still incomplete")).toBeTruthy()
+    expect(screen.getByText("Go to Station 2 first")).toBeTruthy()
+    expect(screen.queryByText(/Walk to Station/i)).toBeNull()
+    expect(
+      screen.queryByText("Head to Dakota Breeze RN Lobby"),
+    ).toBeNull()
+    expect(screen.getByTestId("station-marker-1").getAttribute("data-state")).toBe(
+      "completed",
+    )
+    expect(screen.getByTestId("station-marker-2").getAttribute("data-state")).toBe(
+      "upcoming",
+    )
+    expect(screen.getByTestId("station-marker-3").getAttribute("data-state")).toBe(
+      "completed-current",
+    )
+    expect(screen.getByTestId("connector-from-1").getAttribute("data-state")).toBe(
+      "filled",
+    )
+    expect(screen.getByTestId("connector-from-2").getAttribute("data-state")).toBe(
+      "empty",
+    )
   })
 
   it("submits votes as a CORS-simple text payload", async () => {
