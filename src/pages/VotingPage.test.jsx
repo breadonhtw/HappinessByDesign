@@ -24,8 +24,7 @@ function getChoiceButton(choice) {
 async function pressAndReleaseChoice(choice) {
   const button = getChoiceButton(choice)
 
-  fireEvent.pointerDown(button)
-  fireEvent.pointerUp(button)
+  fireEvent.click(button)
 
   await act(async () => {
     await new Promise((resolve) => window.setTimeout(resolve, 20))
@@ -344,7 +343,7 @@ describe("VotingPage QR progression", () => {
       await new Promise((resolve) => window.setTimeout(resolve, 20))
     })
 
-    fireEvent.pointerUp(getChoiceButton("A"))
+    fireEvent.click(getChoiceButton("A"))
 
     await waitFor(() => {
       const postCalls = fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")

@@ -1,6 +1,6 @@
 export const votingTheme = {
   fonts: {
-    brand: "'Sigmar', cursive",
+    brand: "'Fraunces', serif",
     display: "'Fraunces', serif",
     body: "'Instrument Sans', sans-serif",
   },

@@ -1,154 +1,62 @@
-import React from "react"
-import { useEffect, useState } from "react"
+import React, { memo, useEffect, useState } from "react";
 
-import {
-  alpha,
-  panelStyles,
-  textStyles,
-  votingTheme,
-} from "./designSystem"
-import EvidenceCard from "./EvidenceCard"
-import SplitVoteBar, { SplitVoteBarSkeleton } from "./SplitVoteBar"
+import { REVEAL_CONTENT } from "../../data/revealContent";
+import { alpha } from "./designSystem";
+import EvidenceCard from "./EvidenceCard";
+import SplitVoteBar, { SplitVoteBarSkeleton } from "./SplitVoteBar";
 
 function LoadingBlock({ width = "100%", height = 16, borderRadius = 10 }) {
   return (
-    <div
-      style={{
-        width,
-        height,
-        borderRadius,
-        background: `linear-gradient(90deg, ${votingTheme.colors.surfaceMuted}, ${alpha(
-          votingTheme.colors.surfaceStrong,
-          0.95,
-        )}, ${votingTheme.colors.surfaceMuted})`,
-        border: `1px solid ${alpha(votingTheme.colors.borderStrong, 0.28)}`,
-        animation: "pulse 1.6s ease-in-out infinite",
-      }}
-    />
-  )
+    <div className="voting-loading-block" style={{ width, height, borderRadius }} />
+  );
 }
 
-export default function RevealFlow({ scenario, choice, countsLoading }) {
-  const [phase, setPhase] = useState(0)
-  const [openA, setOpenA] = useState(false)
-  const [openB, setOpenB] = useState(false)
+function RevealFlow({ scenario, choice, countsLoading }) {
+  const [showResults, setShowResults] = useState(false);
+  const [openA, setOpenA] = useState(false);
+  const [openB, setOpenB] = useState(false);
 
-  useEffect(() => {
-    const timers = [
-      setTimeout(() => setPhase(1), 200),
-      setTimeout(() => setPhase(2), 1000),
-      setTimeout(() => setPhase(3), 2600),
-      setTimeout(() => setPhase(4), 4000),
-    ]
-    return () => timers.forEach(clearTimeout)
-  }, [])
-
-  const total = (scenario.votes.a || 0) + (scenario.votes.b || 0)
-  const pctA =
-    total > 0 ? Math.round(((scenario.votes.a || 0) / total) * 100) : 50
-  const pctB = total > 0 ? 100 - pctA : 50
-  const chosen = choice === "a" ? scenario.optionA : scenario.optionB
+  const total = (scenario.votes.a || 0) + (scenario.votes.b || 0);
+  const pctA = total > 0 ? Math.round(((scenario.votes.a || 0) / total) * 100) : 50;
+  const pctB = total > 0 ? 100 - pctA : 50;
+  const chosen = choice === "a" ? scenario.optionA : scenario.optionB;
+  const revealContent = REVEAL_CONTENT[scenario.stationNum];
   const chosenCount = Math.max(
     0,
     (choice === "a" ? scenario.votes.a || 0 : scenario.votes.b || 0) - 1,
-  )
+  );
 
-  const phases = [
-    {
-      visible: phase >= 1,
-      delay: "0s",
-    },
-    {
-      visible: phase >= 2,
-      delay: "0.15s",
-    },
-    {
-      visible: phase >= 3,
-      delay: "0s",
-    },
-    {
-      visible: phase >= 4,
-      delay: "0s",
-    },
-  ]
+  useEffect(() => {
+    const timerId = window.setTimeout(() => {
+      setShowResults(true);
+    }, 1000);
+
+    return () => window.clearTimeout(timerId);
+  }, []);
 
   return (
-    <div style={{ padding: "0 20px 8px" }}>
-      <div
-        style={{
-          opacity: phases[0].visible ? 1 : 0,
-          transform: `translateY(${phases[0].visible ? 0 : 30}px)`,
-          transition: `all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) ${phases[0].delay}`,
-          textAlign: "center",
-          marginBottom: 24,
-        }}
-      >
+    <div className="reveal-flow">
+      <div className="reveal-flow__stage reveal-flow__stage--1">
         <div
+          className="vt-panel vt-panel--strong reveal-flow__hero"
           style={{
-            ...panelStyles.strong,
-            position: "relative",
-            overflow: "hidden",
-            padding: "28px 18px",
+            "--choice-bubble": alpha(chosen.color, 0.12),
+            "--choice-icon-background": `linear-gradient(180deg, ${alpha(
+              chosen.color,
+              0.18,
+            )}, ${alpha(chosen.color, 0.1)})`,
+            "--choice-icon-border": alpha(chosen.color, 0.28),
+            "--choice-text-color": chosen.color,
           }}
         >
-          <div
-            style={{
-              position: "absolute",
-              top: -40,
-              right: -28,
-              width: 130,
-              height: 130,
-              borderRadius: "50%",
-              background: alpha(chosen.color, 0.12),
-            }}
-          />
-          <div
-            style={{
-              width: 66,
-              height: 66,
-              margin: "0 auto 12px",
-              borderRadius: 22,
-              background: `linear-gradient(180deg, ${alpha(
-                chosen.color,
-                0.18,
-              )}, ${alpha(chosen.color, 0.1)})`,
-              border: `1px solid ${alpha(chosen.color, 0.28)}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 36,
-              boxShadow: votingTheme.shadow.inset,
-            }}
-          >
-            {chosen.emoji}
-          </div>
-          <div
-            style={{
-              ...textStyles.sectionTitle,
-              fontSize: 26,
-              marginBottom: 8,
-            }}
-          >
+          <div className="reveal-flow__hero-orb" />
+          <div className="reveal-flow__choice-icon">{chosen.emoji}</div>
+          <div className="reveal-flow__hero-title">
             You chose to {chosen.label.toLowerCase()}
           </div>
-          <div
-            style={{
-              fontFamily: votingTheme.fonts.body,
-              fontSize: 15,
-              color: chosen.color,
-              fontWeight: 700,
-            }}
-          >
+          <div className="reveal-flow__hero-meta">
             {countsLoading ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  marginTop: 4,
-                }}
-              >
-                <LoadingBlock width={228} height={22} borderRadius={999} />
-              </div>
+              <LoadingBlock width={228} height={22} borderRadius={999} />
             ) : (
               `You and ${chosenCount} others made this choice`
             )}
@@ -156,174 +64,70 @@ export default function RevealFlow({ scenario, choice, countsLoading }) {
         </div>
       </div>
 
-      <div
-        style={{
-          opacity: phases[1].visible ? 1 : 0,
-          transform: `translateY(${phases[1].visible ? 0 : 30}px)`,
-          transition: `all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) ${phases[1].delay}`,
-          marginBottom: 24,
-        }}
-      >
-        <div style={{ ...panelStyles.base, padding: "22px 18px 18px" }}>
-          <div
-            style={{
-              ...textStyles.sectionTitle,
-              fontSize: 20,
-              textAlign: "center",
-              marginBottom: 18,
-            }}
-          >
-            How everyone voted
-          </div>
-
-          {countsLoading
-            ? phase >= 2
-              ? <SplitVoteBarSkeleton />
-              : null
-            : phase >= 2
-              ? (
-                <SplitVoteBar
-                  optionA={scenario.optionA}
-                  optionB={scenario.optionB}
-                  votesA={scenario.votes.a}
-                  votesB={scenario.votes.b}
-                  pctA={pctA}
-                  pctB={pctB}
-                  choice={choice}
-                />
-                )
-              : null}
+      <div className="reveal-flow__stage reveal-flow__stage--2">
+        <div className="vt-panel vt-panel--base reveal-flow__section">
+          <div className="reveal-flow__section-title">How everyone voted</div>
+          {!showResults ? null : countsLoading ? (
+            <SplitVoteBarSkeleton />
+          ) : (
+            <SplitVoteBar
+              optionA={scenario.optionA}
+              optionB={scenario.optionB}
+              votesA={scenario.votes.a}
+              votesB={scenario.votes.b}
+              pctA={pctA}
+              pctB={pctB}
+              choice={choice}
+            />
+          )}
         </div>
       </div>
 
-      <div
-        style={{
-          opacity: phases[2].visible ? 1 : 0,
-          transform: `translateY(${phases[2].visible ? 0 : 30}px)`,
-          transition: "all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)",
-          marginBottom: 24,
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <div
-            style={{
-              ...textStyles.sectionTitle,
-              fontSize: 21,
-              marginBottom: 6,
-            }}
-          >
+      <div className="reveal-flow__stage reveal-flow__stage--3">
+        <div className="reveal-flow__research">
+          <div className="vt-section-title reveal-flow__research-title">
             What does the research say?
           </div>
-          <div
-            style={{
-              fontFamily: votingTheme.fonts.body,
-              fontSize: 13,
-              color: votingTheme.colors.textSoft,
-              fontWeight: 700,
-            }}
-          >
+          <div className="reveal-flow__research-copy">
             Tap each card to reveal the evidence
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="reveal-flow__cards">
           <EvidenceCard
             option={scenario.optionA}
-            evidence={scenario.evidenceA}
+            evidence={revealContent.evidenceA}
             isOpen={openA}
-            onToggle={() => setOpenA(!openA)}
+            onToggle={() => setOpenA((current) => !current)}
           />
           <EvidenceCard
             option={scenario.optionB}
-            evidence={scenario.evidenceB}
+            evidence={revealContent.evidenceB}
             isOpen={openB}
-            onToggle={() => setOpenB(!openB)}
+            onToggle={() => setOpenB((current) => !current)}
           />
         </div>
       </div>
 
-      <div
-        style={{
-          opacity: phases[3].visible ? 1 : 0,
-          transform: `translateY(${phases[3].visible ? 0 : 30}px)`,
-          transition: "all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)",
-          marginBottom: 20,
-        }}
-      >
-        <div
-          style={{
-            ...panelStyles.strong,
-            position: "relative",
-            overflow: "hidden",
-            padding: "24px 22px",
-            borderStyle: "dashed",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: -30,
-              right: -30,
-              width: 116,
-              height: 116,
-              borderRadius: "50%",
-              background: alpha(votingTheme.colors.clay, 0.08),
-            }}
-          />
-          <div
-            style={{
-              ...panelStyles.chip,
-              display: "inline-flex",
-              padding: "5px 12px",
-              marginBottom: 10,
-              background: alpha(votingTheme.colors.brass, 0.12),
-            }}
-          >
-            <span style={{ ...textStyles.eyebrow, color: votingTheme.colors.textSoft }}>
-              💡 Did you know?
-            </span>
+      <div className="reveal-flow__stage reveal-flow__stage--4">
+        <div className="vt-panel vt-panel--strong reveal-flow__bias">
+          <div className="reveal-flow__bias-orb" />
+          <div className="vt-chip reveal-flow__bias-chip">
+            <span className="vt-eyebrow">Did you know?</span>
           </div>
-          <div
-            style={{
-              ...textStyles.sectionTitle,
-              fontSize: 24,
-              color: votingTheme.colors.clay,
-              marginBottom: 10,
-            }}
-          >
-            This is called {scenario.bias.name}
+          <div className="vt-section-title reveal-flow__bias-title">
+            This is called {revealContent.bias.name}
           </div>
-          <p
-            style={{
-              ...textStyles.body,
-              fontSize: 14,
-              color: votingTheme.colors.textMuted,
-              margin: "0 0 12px",
-            }}
-          >
-            {scenario.bias.description}
+          <p className="vt-body reveal-flow__bias-copy">
+            {revealContent.bias.description}
           </p>
-          <div
-            style={{
-              ...panelStyles.chip,
-              display: "inline-flex",
-              padding: "5px 13px",
-              background: alpha(votingTheme.colors.surfaceSoft, 0.92),
-            }}
-          >
-            <span
-              style={{
-                fontFamily: votingTheme.fonts.body,
-                fontSize: 12,
-                color: votingTheme.colors.textMuted,
-                fontWeight: 700,
-              }}
-            >
-              — {scenario.bias.source}
-            </span>
+          <div className="vt-chip reveal-flow__bias-source">
+            <span>{revealContent.bias.source}</span>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
+
+export default memo(RevealFlow);
