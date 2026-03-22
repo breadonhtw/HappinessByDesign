@@ -50,6 +50,13 @@ export default function StationProgressIndicator({
       {stationIds.map((stationId, index) => {
         const isCurrent = currentStation === stationId;
         const isCompleted = completedStationSet.has(stationId);
+        const markerState = isCompleted
+          ? isCurrent
+            ? "completed-current"
+            : "completed"
+          : isCurrent
+            ? "current"
+            : "upcoming";
         const markerLabel = isCompleted
           ? isCurrent
             ? `Station ${stationId}: completed, current station`
@@ -64,6 +71,8 @@ export default function StationProgressIndicator({
               role="listitem"
               aria-label={markerLabel}
               aria-current={isCurrent ? "step" : undefined}
+              data-testid={`station-marker-${stationId}`}
+              data-state={markerState}
               style={{
                 position: "relative",
                 flex: "0 0 auto",
@@ -132,6 +141,8 @@ export default function StationProgressIndicator({
             {index < stationIds.length - 1 ? (
               <div
                 aria-hidden="true"
+                data-testid={`connector-from-${stationId}`}
+                data-state={completedStationSet.has(stationId) ? "filled" : "empty"}
                 style={{
                   flex: 1,
                   position: "relative",
