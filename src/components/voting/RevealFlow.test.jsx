@@ -33,7 +33,7 @@ describe("RevealFlow results infographic", () => {
     expect(screen.queryByTestId("split-vote-bar")).toBeNull()
 
     act(() => {
-      vi.advanceTimersByTime(1000)
+      vi.advanceTimersByTime(600)
     })
 
     expect(screen.getByTestId("split-vote-bar")).toBeTruthy()
@@ -49,7 +49,7 @@ describe("RevealFlow results infographic", () => {
     )
 
     act(() => {
-      vi.advanceTimersByTime(1200)
+      vi.advanceTimersByTime(700)
     })
 
     expect(screen.getByTestId("split-vote-bar")).toBeTruthy()
@@ -74,7 +74,7 @@ describe("RevealFlow results infographic", () => {
     expect(screen.queryByTestId("split-vote-bar-skeleton")).toBeNull()
 
     act(() => {
-      vi.advanceTimersByTime(1000)
+      vi.advanceTimersByTime(600)
     })
 
     expect(screen.getByTestId("split-vote-bar-skeleton")).toBeTruthy()
@@ -91,7 +91,7 @@ describe("RevealFlow results infographic", () => {
     )
 
     act(() => {
-      vi.advanceTimersByTime(1200)
+      vi.advanceTimersByTime(700)
     })
 
     expect(screen.getByText("10%")).toBeTruthy()
@@ -109,7 +109,7 @@ describe("RevealFlow results infographic", () => {
 
     act(() => {
       vi.runOnlyPendingTimers()
-      vi.advanceTimersByTime(1200)
+      vi.advanceTimersByTime(700)
     })
 
     expect(screen.getAllByText("50%").length).toBeGreaterThanOrEqual(2)

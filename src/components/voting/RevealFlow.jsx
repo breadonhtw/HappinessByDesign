@@ -11,7 +11,13 @@ function LoadingBlock({ width = "100%", height = 16, borderRadius = 10 }) {
   );
 }
 
-function RevealFlow({ scenario, choice, countsLoading }) {
+function RevealFlow({
+  scenario,
+  choice,
+  countsLoading,
+  nextStep = null,
+  completionStep = null,
+}) {
   const [showResults, setShowResults] = useState(false);
   const [openA, setOpenA] = useState(false);
   const [openB, setOpenB] = useState(false);
@@ -29,7 +35,7 @@ function RevealFlow({ scenario, choice, countsLoading }) {
   useEffect(() => {
     const timerId = window.setTimeout(() => {
       setShowResults(true);
-    }, 1000);
+    }, 550);
 
     return () => window.clearTimeout(timerId);
   }, []);
@@ -126,6 +132,60 @@ function RevealFlow({ scenario, choice, countsLoading }) {
           </div>
         </div>
       </div>
+
+      {nextStep ? (
+        <div className="reveal-flow__stage reveal-flow__stage--5">
+          <div className="vt-panel vt-panel--strong voting-next-card">
+            <div className="vt-chip voting-next-card__chip">
+              <span className="vt-eyebrow">{nextStep.eyebrow}</span>
+            </div>
+            <div className="vt-section-title voting-next-card__title">
+              {nextStep.title}
+            </div>
+            <p className="vt-body voting-next-card__body">{nextStep.body}</p>
+            <button
+              type="button"
+              className="voting-next-button"
+              onClick={nextStep.onAction}
+            >
+              {nextStep.actionLabel}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {completionStep ? (
+        <div
+          className={`reveal-flow__stage ${
+            nextStep ? "reveal-flow__stage--6" : "reveal-flow__stage--5"
+          }`}
+        >
+          <div className="vt-panel vt-panel--strong voting-final-card">
+            <div className="vt-eyebrow voting-final-card__eyebrow">
+              {completionStep.eyebrow}
+            </div>
+            <div className="voting-final-card__icon">{completionStep.icon}</div>
+            <div className="vt-section-title voting-final-card__title">
+              {completionStep.title}
+            </div>
+            <p className="vt-body voting-final-card__body">{completionStep.body}</p>
+            <div className="voting-final-card__actions">
+              {completionStep.actions.map((action, index) => (
+                <div
+                  key={action}
+                  className="vt-panel vt-panel--inset voting-final-card__action"
+                >
+                  <div className="voting-final-card__action-count">{index + 1}</div>
+                  <div className="voting-final-card__action-copy">{action}</div>
+                </div>
+              ))}
+            </div>
+            <div className="vt-chip voting-final-card__location">
+              <span>{completionStep.locationLabel}</span>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

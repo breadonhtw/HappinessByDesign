@@ -189,6 +189,8 @@ export default function VotingPage() {
     entryContext.isCurrentCompleted && !hasPriorGap
       ? entryContext.nextIncompleteStation
       : null;
+  const nextStationScenario =
+    nextStationCta !== null ? SCENARIOS[nextStationCta] ?? null : null;
   const showGuidanceAction =
     guidance?.actionStation !== null && nextStationCta === null;
   const currentScenario = useMemo(
@@ -306,6 +308,22 @@ export default function VotingPage() {
     },
     [setSearchParams],
   );
+  const nextStepCard =
+    choice && nextStationCta !== null
+      ? {
+          eyebrow:
+            nextStationCta === station + 1 ? "Next stop" : "Continue the trail",
+          title: `Head to Station ${nextStationCta}`,
+          body: nextStationScenario
+            ? `Your next reflection is at ${nextStationScenario.location}.`
+            : "Open the next station to continue your Connection Trail journey.",
+          actionLabel:
+            nextStationCta === station + 1
+              ? `Go to Station ${nextStationCta}`
+              : `Continue to Station ${nextStationCta}`,
+          onAction: () => goToStation(nextStationCta),
+        }
+      : null;
 
   const submitVote = useCallback(async ({ station: stationId, choice: selectedChoice }) => {
     if (!isValidChoice(selectedChoice)) {
@@ -393,6 +411,20 @@ export default function VotingPage() {
 
   const finalCardVisible =
     choice && station === lastStation && entryContext.isTrailComplete;
+  const completionStepCard = finalCardVisible
+    ? {
+        eyebrow: "Final stop",
+        icon: "🎴",
+        title: "Head to Dakota Breeze Residential Network Lobby",
+        body: "Finish the trail in person, then follow the three steps below.",
+        actions: [
+          "Collect your Quest Card",
+          "Leave a note on the reflection wall",
+          "Take one small step toward connection today",
+        ],
+        locationLabel: "Dakota Breeze Residential Network Lobby",
+      }
+    : null;
 
   return (
     <div className="voting-app">
@@ -481,38 +513,11 @@ export default function VotingPage() {
               scenario={currentScenario}
               choice={choice}
               countsLoading={countsLoading}
+              nextStep={nextStepCard}
+              completionStep={completionStepCard}
             />
           </Suspense>
         )}
-
-        {choice && nextStationCta !== null ? (
-          <div className="voting-next-wrap">
-            <button
-              type="button"
-              className="voting-next-button"
-              onClick={() => goToStation(nextStationCta)}
-            >
-              {nextStationCta === station + 1
-                ? `Walk to Station ${nextStationCta} →`
-                : `Continue to Station ${nextStationCta} →`}
-            </button>
-          </div>
-        ) : null}
-
-        {finalCardVisible ? (
-          <div className="voting-next-wrap">
-            <div className="vt-panel vt-panel--strong voting-final-card">
-              <div className="voting-final-card__icon">🎴</div>
-              <div className="vt-section-title voting-final-card__title">
-                Head to Dakota Breeze RN Lobby
-              </div>
-              <p className="vt-body voting-final-card__body">
-                Pick up your Quest Card, leave a commitment on the reflection
-                wall, and take the first step toward connection.
-              </p>
-            </div>
-          </div>
-        ) : null}
 
         <div className="voting-footer">
           <div className="voting-footer__line" />
