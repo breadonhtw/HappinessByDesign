@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import { alpha, votingTheme } from "./designSystem";
 
@@ -23,7 +23,7 @@ function CheckIcon() {
   );
 }
 
-export default function StationProgressIndicator({
+function StationProgressIndicator({
   stationIds,
   currentStation,
   completedStations,
@@ -41,11 +41,7 @@ export default function StationProgressIndicator({
       role="list"
       aria-label={`Trail progress: ${completedCount} of ${stationIds.length} stations completed`}
       aria-roledescription="progress tracker"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        width: "100%",
-      }}
+      className="progress-indicator"
     >
       {stationIds.map((stationId, index) => {
         const isCurrent = currentStation === stationId;
@@ -66,34 +62,24 @@ export default function StationProgressIndicator({
             : `Station ${stationId}: upcoming`;
 
         return (
-          <React.Fragment key={stationId}>
+          <div key={stationId} style={{ display: "contents" }}>
             <div
               role="listitem"
               aria-label={markerLabel}
               aria-current={isCurrent ? "step" : undefined}
               data-testid={`station-marker-${stationId}`}
               data-state={markerState}
-              style={{
-                position: "relative",
-                flex: "0 0 auto",
-                width: 30,
-                height: 30,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className="progress-indicator__marker"
             >
               <div
                 aria-hidden="true"
+                className="progress-indicator__halo"
                 style={{
-                  position: "absolute",
-                  inset: 0,
-                  borderRadius: 12,
-                  background:
+                  "--marker-halo":
                     isCurrent && !isCompleted
                       ? alpha(progressAccent, 0.16)
                       : alpha(votingTheme.colors.white, 0.48),
-                  boxShadow:
+                  "--marker-halo-shadow":
                     isCurrent && !isCompleted
                       ? `0 0 0 4px ${alpha(progressAccent, 0.12)}`
                       : "none",
@@ -101,23 +87,16 @@ export default function StationProgressIndicator({
               />
               <div
                 aria-hidden="true"
+                className="progress-indicator__core"
                 style={{
-                  position: "relative",
-                  width: 20,
-                  height: 20,
-                  borderRadius: 8,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: isCompleted
+                  "--marker-background": isCompleted
                     ? `linear-gradient(180deg, ${alpha(progressAccent, 0.92)}, ${progressAccent})`
                     : votingTheme.colors.surfaceStrong,
-                  border: `1px solid ${
+                  "--marker-border":
                     isCompleted || isCurrent
                       ? alpha(progressAccent, isCompleted ? 0.42 : 0.78)
-                      : alpha(votingTheme.colors.borderStrong, 0.55)
-                  }`,
-                  boxShadow: isCompleted
+                      : alpha(votingTheme.colors.borderStrong, 0.55),
+                  "--marker-shadow": isCompleted
                     ? `0 8px 18px ${alpha(progressAccent, 0.22)}`
                     : `inset 0 1px 0 ${alpha(votingTheme.colors.white, 0.84)}`,
                 }}
@@ -126,11 +105,9 @@ export default function StationProgressIndicator({
                   <CheckIcon />
                 ) : (
                   <div
+                    className="progress-indicator__dot"
                     style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: 3,
-                      background: isCurrent
+                      "--marker-dot": isCurrent
                         ? progressAccent
                         : alpha(votingTheme.colors.borderStrong, 0.55),
                     }}
@@ -138,39 +115,29 @@ export default function StationProgressIndicator({
                 )}
               </div>
             </div>
+
             {index < stationIds.length - 1 ? (
               <div
                 aria-hidden="true"
                 data-testid={`connector-from-${stationId}`}
                 data-state={completedStationSet.has(stationId) ? "filled" : "empty"}
-                style={{
-                  flex: 1,
-                  position: "relative",
-                  height: 2,
-                  margin: "0 8px",
-                  borderRadius: votingTheme.radius.chip,
-                  overflow: "hidden",
-                  background: alpha(votingTheme.colors.borderStrong, 0.42),
-                }}
+                className="progress-indicator__connector"
               >
                 <div
+                  className="progress-indicator__connector-fill"
                   style={{
-                    position: "absolute",
-                    inset: 0,
-                    borderRadius: votingTheme.radius.chip,
-                    background: `linear-gradient(90deg, ${alpha(progressAccent, 0.92)}, ${progressAccent})`,
-                    transform: completedStationSet.has(stationId)
-                      ? "scaleX(1)"
-                      : "scaleX(0)",
-                    transformOrigin: "left center",
-                    transition: "transform 0.5s cubic-bezier(0.22, 0.8, 0.22, 1)",
+                    "--connector-scale": completedStationSet.has(stationId)
+                      ? 1
+                      : 0,
                   }}
                 />
               </div>
             ) : null}
-          </React.Fragment>
+          </div>
         );
       })}
     </div>
   );
 }
+
+export default memo(StationProgressIndicator);

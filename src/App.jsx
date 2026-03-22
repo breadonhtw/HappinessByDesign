@@ -1,16 +1,7 @@
-import React from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import VotingPage from './pages/VotingPage'
+import React from "react";
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<VotingPage />} />
-        <Route path="/vote" element={<VotingPage />} />
-      </Routes>
-    </BrowserRouter>
-  )
+import VotingPage from "./pages/VotingPage";
+
+export default function App() {
+  return <VotingPage />;
 }
-
-export default App
