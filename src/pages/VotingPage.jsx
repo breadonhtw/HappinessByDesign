@@ -269,7 +269,9 @@ export default function VotingPage() {
 
   useEffect(() => {
     const handleStorage = (event) => {
-      if (event.storageArea !== window.localStorage) {
+      // Synthetic StorageEvents in tests may omit storageArea; accept them
+      // as long as the key matches this feature's localStorage namespace.
+      if (event.storageArea && event.storageArea !== window.localStorage) {
         return;
       }
 

@@ -19,21 +19,23 @@ describe("TapCard option emphasis", () => {
     )
 
     const optionA = screen.getByRole("button", {
-      name: /^Choose Option A: Stop for a quick chat$/i,
+      name: /^Choose Option A: Join the game, have fun, and meet someone new$/i,
     })
     const optionB = screen.getByRole("button", {
-      name: /^Choose Option B: Say "Hi" then grab your coffee and go$/i,
+      name: /^Choose Option B: Smile, say you're busy, then head home to chill$/i,
     })
 
     fireEvent.pointerEnter(optionA)
     fireEvent.focus(optionB)
 
     expect(handleChoiceIntent).toHaveBeenCalledTimes(2)
-    expect(screen.getByText("Stop for a quick chat")).toBeTruthy()
-    expect(screen.getByText('Say "Hi" then grab your coffee and go')).toBeTruthy()
-    expect(optionA.getAttribute("aria-label")).toBe("Choose Option A: Stop for a quick chat")
+    expect(screen.getByText("Join the game, have fun, and meet someone new")).toBeTruthy()
+    expect(screen.getByText("Smile, say you're busy, then head home to chill")).toBeTruthy()
+    expect(optionA.getAttribute("aria-label")).toBe(
+      "Choose Option A: Join the game, have fun, and meet someone new",
+    )
     expect(optionB.getAttribute("aria-label")).toBe(
-      'Choose Option B: Say "Hi" then grab your coffee and go',
+      "Choose Option B: Smile, say you're busy, then head home to chill",
     )
   })
 
@@ -50,10 +52,10 @@ describe("TapCard option emphasis", () => {
     )
 
     const optionA = screen.getByRole("button", {
-      name: /^Choose Option A: Stop for a quick chat$/i,
+      name: /^Choose Option A: Join the game, have fun, and meet someone new$/i,
     })
     const optionB = screen.getByRole("button", {
-      name: /^Choose Option B: Say "Hi" then grab your coffee and go$/i,
+      name: /^Choose Option B: Smile, say you're busy, then head home to chill$/i,
     })
 
     fireEvent.click(optionA)
@@ -64,7 +66,7 @@ describe("TapCard option emphasis", () => {
     expect(optionA.getAttribute("data-selected")).toBe("true")
     expect(optionB.getAttribute("data-selected")).toBe("false")
     expect(optionB.getAttribute("data-inactive")).toBe("true")
-    expect(screen.getByText("Stop for a quick chat")).toBeTruthy()
-    expect(screen.getByText('Say "Hi" then grab your coffee and go')).toBeTruthy()
+    expect(screen.getByText("Join the game, have fun, and meet someone new")).toBeTruthy()
+    expect(screen.getByText("Smile, say you're busy, then head home to chill")).toBeTruthy()
   })
 })
