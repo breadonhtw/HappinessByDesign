@@ -58,7 +58,8 @@ function RevealFlow({
           <div className="reveal-flow__hero-orb" />
           <div className="reveal-flow__choice-icon">{chosen.emoji}</div>
           <div className="reveal-flow__hero-title">
-            You chose to {chosen.label.toLowerCase()}
+            <span className="reveal-flow__hero-kicker">Your pick</span>
+            <span className="reveal-flow__hero-choice">{chosen.label}</span>
           </div>
           <div className="reveal-flow__hero-meta">
             {countsLoading ? (
