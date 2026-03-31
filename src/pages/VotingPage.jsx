@@ -28,7 +28,7 @@ import {
   readStoredChoice,
   updatePendingSync,
 } from "../lib/voting";
-import { useLocationSearchParams } from "../lib/location";
+import { navigateToUrl, useLocationSearchParams } from "../lib/location";
 
 const stationRail = getOrderedStationIds(SCENARIOS);
 const lastStation = stationRail[stationRail.length - 1] ?? (stationRail[0] ?? 1);
@@ -425,6 +425,8 @@ export default function VotingPage() {
           "Take one small step toward connection today",
         ],
         locationLabel: "Dakota Breeze Residential Network Lobby",
+        mapActionLabel: "Open final destination map",
+        onMapAction: () => navigateToUrl("/map?station=4"),
       }
     : null;
 

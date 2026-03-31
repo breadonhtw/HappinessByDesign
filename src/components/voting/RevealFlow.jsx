@@ -184,6 +184,15 @@ function RevealFlow({
             <div className="vt-chip voting-final-card__location">
               <span>{completionStep.locationLabel}</span>
             </div>
+            {completionStep.mapActionLabel ? (
+              <button
+                type="button"
+                className="voting-final-card__map-button"
+                onClick={completionStep.onMapAction}
+              >
+                {completionStep.mapActionLabel}
+              </button>
+            ) : null}
           </div>
         </div>
       ) : null}

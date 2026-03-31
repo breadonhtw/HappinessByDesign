@@ -1,7 +1,9 @@
+import { TRAIL_STOPS_BY_ID } from "./trailStops";
+
 export const SCENARIOS = {
   1: {
     title: "Yap or Nap?",
-    location: "Sparks @ Mountbatten CC",
+    location: TRAIL_STOPS_BY_ID[1].scenarioLocation,
     stationNum: 1,
     prompt:
       "It's Friday evening. A monthly potluck starts downstairs. Do you...",
@@ -23,7 +25,7 @@ export const SCENARIOS = {
   },
   2: {
     title: "You Know Ball?",
-    location: "Mountbatten CC MPH",
+    location: TRAIL_STOPS_BY_ID[2].scenarioLocation,
     stationNum: 2,
     prompt: "At the court, a group playing basketball asks you in. Do you...",
     optionA: {
@@ -44,7 +46,7 @@ export const SCENARIOS = {
   },
   3: {
     title: "Study Sesh?",
-    location: "Community Library",
+    location: TRAIL_STOPS_BY_ID[3].scenarioLocation,
     stationNum: 3,
     prompt: "At the library, someone asks to share your table. Do you...",
     optionA: {

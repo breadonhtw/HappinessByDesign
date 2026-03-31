@@ -1429,6 +1429,33 @@
   letter-spacing: 0.4px;
 }
 
+.voting-final-card__map-button {
+  position: relative;
+  width: 100%;
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 18px;
+  border: 1px solid rgba(159, 76, 49, 0.14);
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--color-clay-dark), var(--color-clay));
+  box-shadow: 0 14px 28px rgba(159, 76, 49, 0.22);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+}
+
+.voting-final-card__map-button::after {
+  content: "→";
+  font-size: 1em;
+  line-height: 1;
+}
+
 .voting-footer {
   padding: 30px 20px 18px;
   color: var(--color-text-faint);

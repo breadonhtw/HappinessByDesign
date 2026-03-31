@@ -140,7 +140,7 @@ describe("VotingPage QR progression", () => {
     renderAppAt("/vote?station=1")
 
     await user.click(screen.getByRole("button", { name: "Go to Station 2" }))
-    expect(screen.getByText(/Station 2 · mph \/ Opp Sheng Siong/i)).toBeTruthy()
+    expect(screen.getByText(/Station 2 · Mountbatten CC MPH/i)).toBeTruthy()
 
     await act(async () => {
       window.history.back()
@@ -253,6 +253,32 @@ describe("VotingPage QR progression", () => {
     expect(screen.getByTestId("connector-from-2").getAttribute("data-state")).toBe(
       "empty",
     )
+  })
+
+  it("shows a final map CTA after completing station 3 and routes to the destination map", async () => {
+    const user = userEvent.setup()
+    markComplete(1)
+    markComplete(2)
+    renderAppAt("/vote?station=3")
+
+    await pressAndReleaseChoice("A")
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Open final destination map" }),
+      ).toBeTruthy()
+    })
+
+    await user.click(
+      screen.getByRole("button", { name: "Open final destination map" }),
+    )
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe("/map")
+      expect(window.location.search).toBe("?station=4")
+      expect(screen.getByText("Final destination")).toBeTruthy()
+      expect(screen.getAllByText("Dakota Breeze RN Lobby").length).toBeGreaterThan(0)
+    })
   })
 
   it("submits votes as a CORS-simple text payload", async () => {
