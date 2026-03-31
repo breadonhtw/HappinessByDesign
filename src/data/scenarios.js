@@ -1,9 +1,10 @@
 export const SCENARIOS = {
   1: {
     title: "Yap or Nap?",
-    location: "SPARKS",
+    location: "Sparks @ Mountbatten CC",
     stationNum: 1,
-    prompt: "It's Friday evening. A monthly potluck starts downstairs. Do you...",
+    prompt:
+      "It's Friday evening. A monthly potluck starts downstairs. Do you...",
     optionA: {
       short: "Join the monthly potluck downstairs",
       emoji: "🍲",
@@ -14,15 +15,15 @@ export const SCENARIOS = {
     optionB: {
       short: "Lie down, doomscroll, and stay in for the night",
       emoji: "📱",
-      label: "My bed callsss",
+      label: "My bed calls",
       color: "#3F6048",
       bg: "#E5EEE8",
     },
     votes: { a: 47, b: 68 },
   },
   2: {
-    title: "Know Ball?",
-    location: "mph / Opp Sheng Siong",
+    title: "You Know Ball?",
+    location: "Mountbatten CC MPH",
     stationNum: 2,
     prompt: "At the court, a group playing basketball asks you in. Do you...",
     optionA: {
@@ -45,8 +46,7 @@ export const SCENARIOS = {
     title: "Study Sesh?",
     location: "Community Library",
     stationNum: 3,
-    prompt:
-      "At the library, someone asks to share your table. Do you...",
+    prompt: "At the library, someone asks to share your table. Do you...",
     optionA: {
       short: "Ask what they're studying and start talking",
       emoji: "📚",
