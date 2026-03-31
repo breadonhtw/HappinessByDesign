@@ -26,6 +26,42 @@ const STOP_GROUPS = [
   },
 ];
 
+function buildGoogleMapsDirectionsUrl(destination) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+}
+
+function getGoogleMapsUrl(stop) {
+  if (stop.googleMapsUrl) {
+    return stop.googleMapsUrl;
+  }
+
+  return buildGoogleMapsDirectionsUrl(stop.googleMapsDestination);
+}
+
+function GoogleMapsMark() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 64 72"
+      className="trail-map-summary__maps-logo"
+    >
+      <defs>
+        <clipPath id="google-maps-pin-shape">
+          <path d="M32 4C19.85 4 10 13.85 10 26c0 15.22 17.48 24.05 21.28 44.01.11.58.6.99 1.22.99s1.11-.41 1.22-.99C36.52 50.05 54 41.22 54 26 54 13.85 44.15 4 32 4Z" />
+        </clipPath>
+      </defs>
+      <g clipPath="url(#google-maps-pin-shape)">
+        <rect x="0" y="0" width="64" height="72" fill="#34A853" />
+        <polygon points="0,0 34,0 22,26 0,26" fill="#EA4335" />
+        <polygon points="18,26 42,0 64,0 40,28" fill="#1A73E8" />
+        <polygon points="18,26 40,28 24,50 8,34" fill="#FBBC04" />
+        <polygon points="40,28 64,0 64,30 50,44" fill="#4285F4" opacity="0.9" />
+      </g>
+      <circle cx="32" cy="27" r="11" fill="#fff" />
+    </svg>
+  );
+}
+
 function parseStationValue(value) {
   if (value === null || value === "") {
     return null;
@@ -305,6 +341,8 @@ export default function TrailMapPage() {
     };
   }, [activeStop]);
 
+  const googleMapsUrl = activeStop ? getGoogleMapsUrl(activeStop) : null;
+
   return (
     <div className="voting-app trail-map-app">
       <div className="voting-shell trail-map-shell">
@@ -356,6 +394,26 @@ export default function TrailMapPage() {
                   <span>{activeStop.address}</span>
                 </div>
               </div>
+            ) : null}
+            {googleMapsUrl ? (
+              <a
+                className="trail-map-summary__maps-link"
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Open in Google Maps"
+              >
+                <span className="trail-map-summary__maps-mark-wrap">
+                  <GoogleMapsMark />
+                </span>
+                <span className="trail-map-summary__maps-copy">
+                  <span className="trail-map-summary__maps-kicker">Open in</span>
+                  <span className="trail-map-summary__maps-brand">Google Maps</span>
+                </span>
+                <span aria-hidden="true" className="trail-map-summary__maps-arrow">
+                  ↗
+                </span>
+              </a>
             ) : null}
           </div>
         </div>

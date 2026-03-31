@@ -20,6 +20,7 @@ describe("TrailMapPage", () => {
     expect(screen.getByText("Event map")).toBeTruthy();
     expect(screen.getByLabelText("Connection Trail map")).toBeTruthy();
     expect(screen.getByText("Browse the Connection Trail map")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Open in Google Maps" })).toBeNull();
   });
 
   it("opens with the requested station selected from the canonical query param", () => {
@@ -61,6 +62,7 @@ describe("TrailMapPage", () => {
         "aria-pressed",
       ),
     ).toBe("true");
+    expect(screen.getByRole("link", { name: "Open in Google Maps" })).toBeTruthy();
   });
 
   it("clears invalid station params back to the base map route", async () => {
@@ -77,5 +79,16 @@ describe("TrailMapPage", () => {
         "aria-pressed",
       ),
     ).toBe("false");
+  });
+
+  it("shows a Google Maps directions link for the selected station", () => {
+    renderAppAt("/map?station=4");
+
+    const mapsLink = screen.getByRole("link", { name: "Open in Google Maps" });
+
+    expect(mapsLink.getAttribute("target")).toBe("_blank");
+    expect(mapsLink.getAttribute("href")).toBe(
+      "https://www.google.com/maps/search/?api=1&query=90B%20Jln.%20Satu%2C%20Dakota%20Breeze%2C%20Singapore%20392090",
+    );
   });
 });

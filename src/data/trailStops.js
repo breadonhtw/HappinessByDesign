@@ -10,6 +10,9 @@ export const TRAIL_STOPS = [
     kind: "scenario",
     mapColor: "#9A4A4F",
     mapPosition: { x: 158, y: 368 },
+    googleMapsDestination: "SPARKS Mountbatten CC, 87 Jln. Satu, Singapore 390087",
+    googleMapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Mountbatten%20Community%20Club%2C%2087%20Jln.%20Satu%2C%20Singapore%20390087",
   },
   {
     id: 2,
@@ -22,6 +25,10 @@ export const TRAIL_STOPS = [
     kind: "scenario",
     mapColor: "#647892",
     mapPosition: { x: 218, y: 400 },
+    googleMapsDestination:
+      "Multi-Purpose Hall Mountbatten CC, 87 Jln. Satu, Singapore 390087",
+    googleMapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Mountbatten%20Community%20Club%2C%2087%20Jln.%20Satu%2C%20Singapore%20390087",
   },
   {
     id: 3,
@@ -34,6 +41,10 @@ export const TRAIL_STOPS = [
     kind: "scenario",
     mapColor: "#5C7D63",
     mapPosition: { x: 310, y: 370 },
+    googleMapsDestination:
+      "Mountbatten Community Library, 87 Jln. Satu, Singapore 390087",
+    googleMapsUrl:
+      "https://www.google.com/maps/place/1%C2%B018'34.6%22N+103%C2%B053'19.2%22E/@1.309608,103.88867,17z/data=!3m1!4b1!4m4!3m3!8m2!3d1.309608!4d103.88867!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDMyNC4wIKXMDSoASAFQAw%3D%3D",
   },
   {
     id: 4,
@@ -47,6 +58,10 @@ export const TRAIL_STOPS = [
     mapColor: "#B77B48",
     mapPosition: { x: 530, y: 128 },
     badgeSide: "left",
+    googleMapsDestination:
+      "Dakota Breeze Residents' Network Lobby, 90B Jln. Satu, Singapore 392090",
+    googleMapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=90B%20Jln.%20Satu%2C%20Dakota%20Breeze%2C%20Singapore%20392090",
   },
 ];
 

@@ -60,6 +60,92 @@
   margin-top: 14px;
 }
 
+.trail-map-summary__maps-link {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 13px 16px;
+  border: 1px solid rgba(188, 168, 151, 0.74);
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, rgba(255, 252, 247, 0.98), rgba(247, 239, 226, 0.96));
+  box-shadow:
+    0 12px 22px rgba(62, 34, 24, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.trail-map-summary__maps-link:hover,
+.trail-map-summary__maps-link:focus-visible {
+  border-color: rgba(159, 76, 49, 0.2);
+  background:
+    linear-gradient(135deg, rgba(255, 252, 247, 1), rgba(250, 243, 234, 0.98));
+  box-shadow:
+    0 16px 28px rgba(62, 34, 24, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.trail-map-summary__maps-mark-wrap {
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(247, 239, 226, 0.88));
+  box-shadow:
+    0 8px 18px rgba(62, 34, 24, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.trail-map-summary__maps-logo {
+  width: 26px;
+  height: 30px;
+  display: block;
+}
+
+.trail-map-summary__maps-copy {
+  min-width: 0;
+  display: grid;
+  flex: 1;
+}
+
+.trail-map-summary__maps-kicker {
+  color: var(--color-text-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.trail-map-summary__maps-brand {
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.trail-map-summary__maps-arrow {
+  color: var(--color-text-soft);
+  font-size: 18px;
+  line-height: 1;
+}
+
 .trail-map-summary__meta-chip {
   min-height: 32px;
 }
@@ -215,5 +301,19 @@
 
   .trail-map-summary__title {
     font-size: 22px;
+  }
+
+  .trail-map-summary__maps-link {
+    align-items: center;
+    gap: 12px;
+  }
+
+  .trail-map-summary__maps-mark-wrap {
+    width: 46px;
+    height: 46px;
+  }
+
+  .trail-map-summary__maps-brand {
+    font-size: 15px;
   }
 }
