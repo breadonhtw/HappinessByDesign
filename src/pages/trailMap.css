@@ -1,0 +1,219 @@
+.trail-map-app {
+  padding-bottom: 40px;
+}
+
+.trail-map-shell {
+  max-width: 1080px;
+}
+
+.trail-map-header {
+  padding-bottom: 18px;
+}
+
+.trail-map-summary {
+  padding: 0 20px 18px;
+}
+
+.trail-map-summary__panel {
+  padding: 18px 18px 16px;
+  border-radius: 24px;
+}
+
+.trail-map-summary__eyebrow {
+  margin-bottom: 10px;
+  color: var(--color-brass);
+}
+
+.trail-map-summary__heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.trail-map-summary__title {
+  font-size: 25px;
+}
+
+.trail-map-summary__body {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.trail-map-summary__clear {
+  min-height: 34px;
+  padding: 8px 14px;
+  border: 1px solid rgba(188, 168, 151, 0.6);
+  border-radius: 999px;
+  background: rgba(255, 252, 247, 0.82);
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.trail-map-summary__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.trail-map-summary__meta-chip {
+  min-height: 32px;
+}
+
+.trail-map-summary__meta-chip span {
+  color: var(--color-text-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.trail-map-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 0 20px 18px;
+}
+
+.trail-map-layout__canvas,
+.trail-map-layout__sidebar {
+  min-width: 0;
+}
+
+.trail-map-canvas {
+  overflow: hidden;
+  padding: 12px;
+  border-radius: 28px;
+}
+
+.trail-map-canvas__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 20px;
+}
+
+.trail-map-layout__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.trail-map-panel {
+  padding: 18px 16px;
+  border-radius: 24px;
+}
+
+.trail-map-panel__eyebrow {
+  margin-bottom: 12px;
+}
+
+.trail-map-panel__body {
+  font-size: 14px;
+}
+
+.trail-map-station-groups {
+  display: grid;
+  gap: 14px;
+}
+
+.trail-map-station-group__title {
+  margin-bottom: 8px;
+  color: var(--color-text-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+
+.trail-map-station-group__items {
+  display: grid;
+  gap: 8px;
+}
+
+.trail-map-stop-button {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  background: rgba(255, 252, 247, 0.72);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.trail-map-stop-button:hover,
+.trail-map-stop-button:focus-visible {
+  border-color: rgba(188, 168, 151, 0.72);
+  background: rgba(255, 252, 247, 0.96);
+  box-shadow: 0 10px 20px rgba(62, 34, 24, 0.08);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.trail-map-stop-button[aria-pressed="true"] {
+  border-color: rgba(188, 168, 151, 0.9);
+  background: rgba(255, 252, 247, 0.98);
+  box-shadow: 0 12px 24px rgba(62, 34, 24, 0.12);
+}
+
+.trail-map-stop-button__marker {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--stop-marker);
+  color: var(--color-white);
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 0 0 4px var(--stop-glow);
+}
+
+.trail-map-stop-button__copy {
+  display: grid;
+  gap: 4px;
+}
+
+.trail-map-stop-button__name {
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.trail-map-stop-button__meta {
+  color: var(--color-text-soft);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (min-width: 860px) {
+  .trail-map-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.9fr);
+    align-items: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .trail-map-summary__heading-row {
+    flex-direction: column;
+  }
+
+  .trail-map-summary__title {
+    font-size: 22px;
+  }
+}

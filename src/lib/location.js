@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+export const LOCATION_CHANGE_EVENT = "app:locationchange";
+
 function readLocationSnapshot() {
   return {
     pathname: window.location.pathname,
@@ -7,16 +9,29 @@ function readLocationSnapshot() {
   };
 }
 
+function notifyLocationChange() {
+  window.dispatchEvent(new Event(LOCATION_CHANGE_EVENT));
+}
+
+export function navigateToUrl(nextUrl, { replace = false } = {}) {
+  window.history[replace ? "replaceState" : "pushState"]({}, "", nextUrl);
+  notifyLocationChange();
+}
+
 export function useLocationSearchParams() {
   const [locationState, setLocationState] = useState(readLocationSnapshot);
 
   useEffect(() => {
-    const handlePopState = () => {
+    const handleLocationChange = () => {
       setLocationState(readLocationSnapshot());
     };
 
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    window.addEventListener("popstate", handleLocationChange);
+    window.addEventListener(LOCATION_CHANGE_EVENT, handleLocationChange);
+    return () => {
+      window.removeEventListener("popstate", handleLocationChange);
+      window.removeEventListener(LOCATION_CHANGE_EVENT, handleLocationChange);
+    };
   }, []);
 
   const searchParams = useMemo(
@@ -35,8 +50,7 @@ export function useLocationSearchParams() {
     const nextSearch = normalizedParams.toString();
     const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}`;
 
-    window.history[replace ? "replaceState" : "pushState"]({}, "", nextUrl);
-    setLocationState(readLocationSnapshot());
+    navigateToUrl(nextUrl, { replace });
   }, []);
 
   return [searchParams, setSearchParams];
