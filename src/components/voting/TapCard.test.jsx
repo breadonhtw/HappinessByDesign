@@ -1,72 +1,140 @@
-import React from "react"
-import { fireEvent, render, screen } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import React from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
-import { SCENARIOS } from "../../data/scenarios"
-import TapCard from "./TapCard"
+import { SCENARIOS } from "../../data/scenarios";
+import TapCard from "./TapCard";
 
 describe("TapCard option emphasis", () => {
   it("keeps option labels and text accessible during hover and focus intent", () => {
-    const handleChoice = vi.fn()
-    const handleChoiceIntent = vi.fn()
+    const handleSubmitResponse = vi.fn();
+    const handleChoiceIntent = vi.fn();
 
     render(
       <TapCard
         scenario={SCENARIOS[2]}
-        onChoice={handleChoice}
+        onSubmitResponse={handleSubmitResponse}
         onChoiceIntent={handleChoiceIntent}
       />,
-    )
+    );
 
     const optionA = screen.getByRole("button", {
       name: /^Choose Option A: Join the game, have fun, and meet someone new$/i,
-    })
+    });
     const optionB = screen.getByRole("button", {
       name: /^Choose Option B: Smile, say you're busy, then head home to chill$/i,
-    })
+    });
+    const optionOther = screen.getByRole("button", {
+      name: /^Choose Other: Share another response in your own words$/i,
+    });
 
-    fireEvent.pointerEnter(optionA)
-    fireEvent.focus(optionB)
+    fireEvent.pointerEnter(optionA);
+    fireEvent.focus(optionB);
+    fireEvent.pointerEnter(optionOther);
 
-    expect(handleChoiceIntent).toHaveBeenCalledTimes(2)
-    expect(screen.getByText("Join the game, have fun, and meet someone new")).toBeTruthy()
-    expect(screen.getByText("Smile, say you're busy, then head home to chill")).toBeTruthy()
+    expect(handleChoiceIntent).toHaveBeenCalledTimes(3);
+    expect(screen.getByText("Join the game, have fun, and meet someone new")).toBeTruthy();
+    expect(screen.getByText("Smile, say you're busy, then head home to chill")).toBeTruthy();
+    expect(screen.getByText("Share another response in your own words")).toBeTruthy();
     expect(optionA.getAttribute("aria-label")).toBe(
       "Choose Option A: Join the game, have fun, and meet someone new",
-    )
+    );
     expect(optionB.getAttribute("aria-label")).toBe(
       "Choose Option B: Smile, say you're busy, then head home to chill",
-    )
-  })
+    );
+    expect(optionOther.getAttribute("aria-label")).toBe(
+      "Choose Other: Share another response in your own words",
+    );
+  });
 
-  it("locks in the selected option without removing either option sentence", () => {
-    const handleChoice = vi.fn()
-    const handleChoiceIntent = vi.fn()
+  it("keeps the selection editable before final submit", () => {
+    const handleSubmitResponse = vi.fn();
+    const handleChoiceIntent = vi.fn();
 
     render(
       <TapCard
         scenario={SCENARIOS[2]}
-        onChoice={handleChoice}
+        onSubmitResponse={handleSubmitResponse}
         onChoiceIntent={handleChoiceIntent}
       />,
-    )
+    );
 
     const optionA = screen.getByRole("button", {
       name: /^Choose Option A: Join the game, have fun, and meet someone new$/i,
-    })
+    });
     const optionB = screen.getByRole("button", {
       name: /^Choose Option B: Smile, say you're busy, then head home to chill$/i,
-    })
+    });
+    const optionOther = screen.getByRole("button", {
+      name: /^Choose Other: Share another response in your own words$/i,
+    });
 
-    fireEvent.click(optionA)
+    fireEvent.click(optionA);
+    fireEvent.click(optionOther);
+    fireEvent.click(optionB);
 
-    expect(handleChoice).toHaveBeenCalledWith("a")
-    expect(optionA.disabled).toBe(true)
-    expect(optionB.disabled).toBe(true)
-    expect(optionA.getAttribute("data-selected")).toBe("true")
-    expect(optionB.getAttribute("data-selected")).toBe("false")
-    expect(optionB.getAttribute("data-inactive")).toBe("true")
-    expect(screen.getByText("Join the game, have fun, and meet someone new")).toBeTruthy()
-    expect(screen.getByText("Smile, say you're busy, then head home to chill")).toBeTruthy()
-  })
-})
+    expect(handleSubmitResponse).not.toHaveBeenCalled();
+    expect(optionA.disabled).toBe(false);
+    expect(optionB.disabled).toBe(false);
+    expect(optionOther.disabled).toBe(false);
+    expect(optionA.getAttribute("data-selected")).toBe("false");
+    expect(optionB.getAttribute("data-selected")).toBe("true");
+    expect(optionOther.getAttribute("data-selected")).toBe("false");
+    expect(screen.getByText("Selected response")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Submit response" })).toBeTruthy();
+  });
+
+  it("allows A/B submission without age range and sends the structured payload", () => {
+    const handleSubmitResponse = vi.fn();
+
+    render(
+      <TapCard
+        scenario={SCENARIOS[1]}
+        onSubmitResponse={handleSubmitResponse}
+        onChoiceIntent={() => {}}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /^Choose Option A: Join the monthly potluck downstairs$/i,
+      }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Submit response" }));
+
+    expect(handleSubmitResponse).toHaveBeenCalledWith({ choice: "a" });
+  });
+
+  it("requires written text before submitting Other", () => {
+    const handleSubmitResponse = vi.fn();
+
+    render(
+      <TapCard
+        scenario={SCENARIOS[1]}
+        onSubmitResponse={handleSubmitResponse}
+        onChoiceIntent={() => {}}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /^Choose Other: Share another response in your own words$/i,
+      }),
+    );
+
+    expect(screen.getByRole("button", { name: "Submit response" }).disabled).toBe(true);
+
+    fireEvent.change(
+      screen.getByLabelText("Tell us what you would choose instead"),
+      {
+        target: { value: "I'd talk for a while, then head off." },
+      },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Submit response" }));
+
+    expect(handleSubmitResponse).toHaveBeenCalledWith({
+      choice: "other",
+      otherText: "I'd talk for a while, then head off.",
+    });
+  });
+});

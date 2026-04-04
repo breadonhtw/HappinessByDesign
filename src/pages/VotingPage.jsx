@@ -11,6 +11,7 @@ import React, {
 } from "react";
 
 import { alpha, votingTheme } from "../components/voting/designSystem";
+import OtherResponseFlow from "../components/voting/OtherResponseFlow";
 import RevealFlowFallback from "../components/voting/RevealFlowFallback";
 import StationProgressIndicator from "../components/voting/StationProgressIndicator";
 import TapCard from "../components/voting/TapCard";
@@ -21,11 +22,13 @@ import {
   buildInitialCounts,
   getOrderedStationIds,
   getStationEntryContext,
+  isValidAgeRange,
   isValidChoice,
   markStationVote,
   normalizeCounts,
+  normalizeStoredResponse,
   parseRequestedStation,
-  readStoredChoice,
+  readStoredResponse,
   updatePendingSync,
 } from "../lib/voting";
 import { navigateToUrl, useLocationSearchParams } from "../lib/location";
@@ -162,7 +165,7 @@ export default function VotingPage() {
     [searchParams],
   );
   const station = requestedStationState.station;
-  const [choice, setChoice] = useState(() => readStoredChoice(station));
+  const [response, setResponse] = useState(() => readStoredResponse(station));
   const [liveCounts, setLiveCounts] = useState(() =>
     buildInitialCounts(SCENARIOS),
   );
@@ -184,6 +187,7 @@ export default function VotingPage() {
   const scenario = useMemo(() => SCENARIOS[station], [station]);
   const entryContext = getStationEntryContext(station, SCENARIOS);
   const guidance = buildGuidance(entryContext);
+  const submittedChoice = response?.choice ?? null;
   const hasPriorGap = entryContext.priorIncompleteStation !== null;
   const nextStationCta =
     entryContext.isCurrentCompleted && !hasPriorGap
@@ -207,7 +211,7 @@ export default function VotingPage() {
     }
 
     setInvalidStationNotice(requestedStationState.fallbackStation);
-    setChoice(readStoredChoice(station));
+    setResponse(readStoredResponse(station));
     setSearchParams(
       (currentParams) => {
         const nextParams = new URLSearchParams(currentParams);
@@ -236,12 +240,14 @@ export default function VotingPage() {
     const controller = new AbortController();
 
     fetch(VOTE_API_URL, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to fetch live vote counts (${response.status}).`);
+      .then((responseValue) => {
+        if (!responseValue.ok) {
+          throw new Error(
+            `Failed to fetch live vote counts (${responseValue.status}).`,
+          );
         }
 
-        return response.json();
+        return responseValue.json();
       })
       .then((data) => {
         setLiveCounts(normalizeCounts(data, SCENARIOS));
@@ -264,13 +270,11 @@ export default function VotingPage() {
   }, []);
 
   useEffect(() => {
-    setChoice(readStoredChoice(station));
+    setResponse(readStoredResponse(station));
   }, [station]);
 
   useEffect(() => {
     const handleStorage = (event) => {
-      // Synthetic StorageEvents in tests may omit storageArea; accept them
-      // as long as the key matches this feature's localStorage namespace.
       if (event.storageArea && event.storageArea !== window.localStorage) {
         return;
       }
@@ -279,7 +283,7 @@ export default function VotingPage() {
         return;
       }
 
-      setChoice(readStoredChoice(station));
+      setResponse(readStoredResponse(station));
       bumpVoteStateVersion();
     };
 
@@ -301,7 +305,7 @@ export default function VotingPage() {
   const goToStation = useCallback(
     (nextStation) => {
       setInvalidStationNotice(null);
-      setChoice(readStoredChoice(nextStation));
+      setResponse(readStoredResponse(nextStation));
       setSearchParams((currentParams) => {
         const nextParams = new URLSearchParams(currentParams);
         nextParams.set("station", String(nextStation));
@@ -310,8 +314,9 @@ export default function VotingPage() {
     },
     [setSearchParams],
   );
+
   const nextStepCard =
-    choice && nextStationCta !== null
+    submittedChoice && nextStationCta !== null
       ? {
           eyebrow:
             nextStationCta === station + 1 ? "Next stop" : "Continue the trail",
@@ -327,17 +332,35 @@ export default function VotingPage() {
         }
       : null;
 
-  const submitVote = useCallback(async ({ station: stationId, choice: selectedChoice }) => {
-    if (!isValidChoice(selectedChoice)) {
+  const submitVote = useCallback(async ({ station: stationId, response: nextResponse }) => {
+    const normalizedResponse = normalizeStoredResponse(nextResponse);
+
+    if (!normalizedResponse || !isValidChoice(normalizedResponse.choice)) {
       setSubmitError("Invalid vote selection.");
+      return false;
+    }
+
+    if (
+      normalizedResponse.ageRange &&
+      !isValidAgeRange(normalizedResponse.ageRange)
+    ) {
+      setSubmitError("Invalid age range.");
+      return false;
+    }
+
+    if (
+      normalizedResponse.choice === "other" &&
+      !normalizedResponse.otherText?.trim()
+    ) {
+      setSubmitError("Please share your other response before submitting.");
       return false;
     }
 
     if (!VOTE_API_URL) {
       const message =
         VOTE_API_CONFIG_ERROR ||
-        "Voting API is not configured. Your choice is saved only on this device.";
-      updatePendingSync(stationId, selectedChoice);
+        "Voting API is not configured. Your response is saved only on this device.";
+      updatePendingSync(stationId, normalizedResponse);
       setSubmitError(message);
       return false;
     }
@@ -346,15 +369,24 @@ export default function VotingPage() {
     setSubmitError("");
 
     try {
-      const response = await fetch(VOTE_API_URL, {
+      const responseValue = await fetch(VOTE_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "text/plain;charset=utf-8",
         },
-        body: JSON.stringify({ station: stationId, choice: selectedChoice }),
+        body: JSON.stringify({
+          station: stationId,
+          choice: normalizedResponse.choice,
+          ...(normalizedResponse.ageRange
+            ? { ageRange: normalizedResponse.ageRange }
+            : {}),
+          ...(normalizedResponse.otherText
+            ? { otherText: normalizedResponse.otherText }
+            : {}),
+        }),
       });
 
-      const rawResponse = await response.text();
+      const rawResponse = await responseValue.text();
       let payload = null;
 
       if (rawResponse) {
@@ -365,8 +397,8 @@ export default function VotingPage() {
         }
       }
 
-      if (!response.ok) {
-        throw new Error(`Vote sync failed (${response.status}).`);
+      if (!responseValue.ok) {
+        throw new Error(`Vote sync failed (${responseValue.status}).`);
       }
 
       if (payload?.success === false) {
@@ -376,9 +408,9 @@ export default function VotingPage() {
       updatePendingSync(stationId, null);
       return true;
     } catch {
-      updatePendingSync(stationId, selectedChoice);
+      updatePendingSync(stationId, normalizedResponse);
       setSubmitError(
-        "Your choice is saved on this device, but the vote server did not confirm it. Retry to sync it.",
+        "Your response is saved on this device, but the vote server did not confirm it. Retry to sync it.",
       );
       return false;
     } finally {
@@ -386,33 +418,44 @@ export default function VotingPage() {
     }
   }, []);
 
-  const handleChoice = useCallback(
-    async (selectedChoice) => {
-      if (submitting || choice) {
+  const handleSubmitResponse = useCallback(
+    async (nextResponse) => {
+      if (submitting || submittedChoice) {
         return;
       }
 
-      preloadRevealFlow();
-      setChoice(selectedChoice);
+      const normalizedResponse = normalizeStoredResponse(nextResponse);
+
+      if (!normalizedResponse) {
+        setSubmitError("Please complete the response form before submitting.");
+        return;
+      }
+
+      if (normalizedResponse.choice !== "other") {
+        preloadRevealFlow();
+      }
+
       setSubmitError("");
+      setResponse(normalizedResponse);
+      markStationVote(station, normalizedResponse);
 
-      markStationVote(station, selectedChoice);
+      if (normalizedResponse.choice === "a" || normalizedResponse.choice === "b") {
+        setLiveCounts((current) => {
+          const updated = { ...current };
+          updated[station] = { ...updated[station] };
+          updated[station][normalizedResponse.choice] =
+            (updated[station][normalizedResponse.choice] || 0) + 1;
+          return updated;
+        });
+      }
 
-      setLiveCounts((current) => {
-        const updated = { ...current };
-        updated[station] = { ...updated[station] };
-        updated[station][selectedChoice] =
-          (updated[station][selectedChoice] || 0) + 1;
-        return updated;
-      });
-
-      await submitVote({ station, choice: selectedChoice });
+      await submitVote({ station, response: normalizedResponse });
     },
-    [choice, station, submitVote, submitting],
+    [station, submitVote, submittedChoice, submitting],
   );
 
   const finalCardVisible =
-    choice && station === lastStation && entryContext.isTrailComplete;
+    submittedChoice && station === lastStation && entryContext.isTrailComplete;
   const completionStepCard = finalCardVisible
     ? {
         eyebrow: "Final stop",
@@ -420,7 +463,6 @@ export default function VotingPage() {
         title: "Head to Dakota Breeze Residential Network Lobby",
         body: "Finish the trail in person, then follow the three steps below.",
         actions: [
-          "Collect your Quest Card",
           "Leave a note on the reflection wall",
           "Take one small step toward connection today",
         ],
@@ -503,19 +545,31 @@ export default function VotingPage() {
           />
         ) : null}
 
-        {!choice ? (
+        {!submittedChoice ? (
           <TapCard
             scenario={scenario}
-            onChoice={handleChoice}
+            submitting={submitting}
+            onSubmitResponse={handleSubmitResponse}
             onChoiceIntent={preloadRevealFlow}
+          />
+        ) : submittedChoice === "other" ? (
+          <OtherResponseFlow
+            response={response}
+            nextStep={nextStepCard}
+            completionStep={completionStepCard}
           />
         ) : (
           <Suspense
-            fallback={<RevealFlowFallback scenario={currentScenario} choice={choice} />}
+            fallback={
+              <RevealFlowFallback
+                scenario={currentScenario}
+                choice={submittedChoice}
+              />
+            }
           >
             <RevealFlow
               scenario={currentScenario}
-              choice={choice}
+              choice={submittedChoice}
               countsLoading={countsLoading}
               nextStep={nextStepCard}
               completionStep={completionStepCard}

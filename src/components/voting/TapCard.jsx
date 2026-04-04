@@ -1,6 +1,7 @@
 import React, { memo, useState } from "react";
 
 import { alpha, panelStyles, votingTheme } from "./designSystem";
+import { AGE_RANGE_OPTIONS } from "../../lib/voting";
 
 function formatPromptSections(prompt) {
   const parts = prompt
@@ -33,23 +34,25 @@ function formatPromptSections(prompt) {
 }
 
 function TapOption({
+  ariaLabel,
   choice,
   scenarioOption,
   hintDelay,
-  isCommitted,
+  isDisabled,
   isSelected,
   isDimmed,
   onChoice,
   onChoiceIntent,
 }) {
-  const isIdle = !isCommitted;
-  const isInactive = isDimmed || isCommitted;
+  const isIdle = !isDisabled;
+  const isInactive = isDimmed || isDisabled;
+  const optionLabel = choice === "other" ? "Other" : `Option ${choice.toUpperCase()}`;
 
   return (
     <button
       type="button"
-      aria-label={`Choose Option ${choice.toUpperCase()}: ${scenarioOption.short}`}
-      disabled={isCommitted}
+      aria-label={ariaLabel}
+      disabled={isDisabled}
       className="vt-panel vt-panel--inset tap-option"
       data-idle={isIdle}
       data-inactive={isInactive}
@@ -109,7 +112,7 @@ function TapOption({
           {scenarioOption.emoji}
         </div>
         <div className="tap-option__copy">
-          <div className="tap-option__label">Option {choice.toUpperCase()}</div>
+          <div className="tap-option__label">{optionLabel}</div>
           <div className="tap-option__text">{scenarioOption.short}</div>
         </div>
       </div>
@@ -122,22 +125,74 @@ function TapOption({
   );
 }
 
-function TapCard({ scenario, onChoice, onChoiceIntent }) {
-  const [committedChoice, setCommittedChoice] = useState(null);
+const OTHER_OPTION = {
+  short: "Share another response in your own words",
+  emoji: "✍️",
+  label: "Something else",
+  color: "#8A5A44",
+  bg: "#F3E8DD",
+};
+
+function buildResponseSummary(selectedChoice, scenario) {
+  if (selectedChoice === "a") {
+    return "Option A";
+  }
+
+  if (selectedChoice === "b") {
+    return "Option B";
+  }
+
+  return scenario.optionOther?.label || OTHER_OPTION.label;
+}
+
+function TapCard({ scenario, submitting = false, onSubmitResponse, onChoiceIntent }) {
+  const [selectedChoice, setSelectedChoice] = useState(null);
+  const [ageRange, setAgeRange] = useState("");
+  const [otherText, setOtherText] = useState("");
+  const [validationError, setValidationError] = useState("");
   const promptSections = formatPromptSections(scenario.prompt);
+  const optionOther = scenario.optionOther ?? OTHER_OPTION;
 
   const handleChoice = (choice) => {
-    if (committedChoice !== null) {
+    if (submitting) {
       return;
     }
 
-    setCommittedChoice(choice);
-    onChoice(choice);
+    setSelectedChoice(choice);
+    setValidationError("");
   };
 
-  const isSelectingA = committedChoice === "a";
-  const isSelectingB = committedChoice === "b";
-  const isInteractionLocked = committedChoice !== null;
+  const handleSubmit = () => {
+    if (!selectedChoice || submitting) {
+      return;
+    }
+
+    const trimmedOtherText = otherText.trim();
+
+    if (selectedChoice === "other" && !trimmedOtherText) {
+      setValidationError("Please share your other response before submitting.");
+      return;
+    }
+
+    setValidationError("");
+    onSubmitResponse({
+      choice: selectedChoice,
+      ageRange: ageRange || undefined,
+      otherText: selectedChoice === "other" ? trimmedOtherText : undefined,
+    });
+  };
+
+  const isSelectingA = selectedChoice === "a";
+  const isSelectingB = selectedChoice === "b";
+  const isSelectingOther = selectedChoice === "other";
+  const isInteractionDisabled = submitting;
+  const submitDisabled =
+    !selectedChoice ||
+    submitting ||
+    (selectedChoice === "other" && otherText.trim().length === 0);
+  const selectedSummary = selectedChoice
+    ? buildResponseSummary(selectedChoice, scenario)
+    : "";
 
   return (
     <div className="tap-card">
@@ -176,9 +231,10 @@ function TapCard({ scenario, onChoice, onChoiceIntent }) {
               choice="a"
               scenarioOption={scenario.optionA}
               hintDelay="0s"
-              isCommitted={committedChoice !== null}
+              ariaLabel={`Choose Option A: ${scenario.optionA.short}`}
+              isDisabled={isInteractionDisabled}
               isSelected={isSelectingA}
-              isDimmed={isInteractionLocked && !isSelectingA}
+              isDimmed={selectedChoice !== null && !isSelectingA}
               onChoice={handleChoice}
               onChoiceIntent={onChoiceIntent}
             />
@@ -186,13 +242,98 @@ function TapCard({ scenario, onChoice, onChoiceIntent }) {
               choice="b"
               scenarioOption={scenario.optionB}
               hintDelay="0.45s"
-              isCommitted={committedChoice !== null}
+              ariaLabel={`Choose Option B: ${scenario.optionB.short}`}
+              isDisabled={isInteractionDisabled}
               isSelected={isSelectingB}
-              isDimmed={isInteractionLocked && !isSelectingB}
+              isDimmed={selectedChoice !== null && !isSelectingB}
+              onChoice={handleChoice}
+              onChoiceIntent={onChoiceIntent}
+            />
+            <TapOption
+              choice="other"
+              scenarioOption={optionOther}
+              hintDelay="0.9s"
+              ariaLabel={`Choose Other: ${optionOther.short}`}
+              isDisabled={isInteractionDisabled}
+              isSelected={isSelectingOther}
+              isDimmed={selectedChoice !== null && !isSelectingOther}
               onChoice={handleChoice}
               onChoiceIntent={onChoiceIntent}
             />
           </div>
+
+          {selectedChoice ? (
+            <div className="vt-panel vt-panel--inset tap-card__survey">
+              <div className="tap-card__survey-header">
+                <div className="vt-chip tap-card__survey-chip">
+                  <span className="vt-eyebrow">Selected response</span>
+                </div>
+                <div className="tap-card__survey-selection">{selectedSummary}</div>
+              </div>
+
+              <div className="tap-card__survey-section">
+                <div className="tap-card__survey-label">Optional age range</div>
+                <div className="tap-card__age-grid" role="group" aria-label="Optional age range">
+                  {AGE_RANGE_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className="vt-chip tap-card__age-button"
+                      data-selected={ageRange === option.value}
+                      onClick={() => setAgeRange(option.value)}
+                      aria-pressed={ageRange === option.value}
+                      aria-label={`Select age range ${option.label}`}
+                    >
+                      <span>{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {selectedChoice === "other" ? (
+                <div className="tap-card__survey-section">
+                  <label className="tap-card__survey-label" htmlFor={`other-response-${scenario.stationNum}`}>
+                    Tell us what you would choose instead
+                  </label>
+                  <textarea
+                    id={`other-response-${scenario.stationNum}`}
+                    className="tap-card__survey-textarea"
+                    value={otherText}
+                    onChange={(event) => {
+                      setOtherText(event.target.value);
+                      if (validationError) {
+                        setValidationError("");
+                      }
+                    }}
+                    rows={4}
+                    placeholder="Share your response in your own words."
+                  />
+                </div>
+              ) : null}
+
+              <p className="tap-card__survey-note">
+                Age range is optional and anonymous.
+                {selectedChoice === "other"
+                  ? " Your written response is required for this option."
+                  : ""}
+              </p>
+
+              {validationError ? (
+                <div role="alert" className="tap-card__survey-error">
+                  {validationError}
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                className="tap-card__submit"
+                disabled={submitDisabled}
+                onClick={handleSubmit}
+              >
+                {submitting ? "Submitting..." : "Submit response"}
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
