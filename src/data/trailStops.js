@@ -29,6 +29,10 @@ export const TRAIL_STOPS = [
       "Multi-Purpose Hall Mountbatten CC, 87 Jln. Satu, Singapore 390087",
     googleMapsUrl:
       "https://www.google.com/maps/search/?api=1&query=Mountbatten%20Community%20Club%2C%2087%20Jln.%20Satu%2C%20Singapore%20390087",
+    standPhotoSrc: "/station-stands/station-2.jpg",
+    standPhotoAlt:
+      "Physical Connection Trail stand at the Multi-Purpose Hall in Mountbatten Community Club",
+    standPhotoCaption: "Look around Level 1 by the hall entrance.",
   },
   {
     id: 3,
@@ -45,6 +49,10 @@ export const TRAIL_STOPS = [
       "Mountbatten Community Library, 87 Jln. Satu, Singapore 390087",
     googleMapsUrl:
       "https://www.google.com/maps/place/1%C2%B018'34.6%22N+103%C2%B053'19.2%22E/@1.309608,103.88867,17z/data=!3m1!4b1!4m4!3m3!8m2!3d1.309608!4d103.88867!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDMyNC4wIKXMDSoASAFQAw%3D%3D",
+    standPhotoSrc: "/station-stands/station-3.jpg",
+    standPhotoAlt:
+      "Physical Connection Trail stand near Mountbatten Community Library",
+    standPhotoCaption: "Look for the stand around the library entrance area.",
   },
   {
     id: 4,
@@ -62,6 +70,10 @@ export const TRAIL_STOPS = [
       "Dakota Breeze Residents' Network Lobby, 90B Jln. Satu, Singapore 392090",
     googleMapsUrl:
       "https://www.google.com/maps/search/?api=1&query=90B%20Jln.%20Satu%2C%20Dakota%20Breeze%2C%20Singapore%20392090",
+    standPhotoSrc: "/station-stands/station-4.jpg",
+    standPhotoAlt:
+      "Physical Connection Trail stand at the Dakota Breeze Residents' Network lobby",
+    standPhotoCaption: "Look around the Level 1 lobby area.",
   },
 ];
 

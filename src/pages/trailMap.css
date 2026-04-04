@@ -60,13 +60,74 @@
   margin-top: 14px;
 }
 
+.trail-map-summary__photo {
+  margin-top: 16px;
+}
+
+.trail-map-summary__photo-eyebrow {
+  margin-bottom: 10px;
+  color: var(--color-text-soft);
+}
+
+.trail-map-summary__photo-frame {
+  overflow: hidden;
+  border: 1px solid rgba(188, 168, 151, 0.74);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(247, 239, 226, 0.96));
+  box-shadow:
+    0 12px 22px rgba(62, 34, 24, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.trail-map-summary__photo-stage {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 247, 0.94), rgba(240, 230, 218, 0.82));
+}
+
+.trail-map-summary__photo-image {
+  width: min(100%, 420px);
+  max-height: min(68vh, 540px);
+  display: block;
+  object-fit: contain;
+  border-radius: 18px;
+  opacity: 0;
+  transition: opacity 0.24s ease;
+}
+
+.trail-map-summary__photo[data-image-status="loaded"] .trail-map-summary__photo-image {
+  opacity: 1;
+}
+
+.trail-map-summary__photo-caption {
+  padding: 12px 14px 14px;
+  color: var(--color-text-soft);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.trail-map-summary__scroll-hint {
+  margin-top: 14px;
+  color: rgba(122, 89, 74, 0.72);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  line-height: 1.5;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .trail-map-summary__maps-link {
   width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  margin-top: 14px;
+  margin-top: 16px;
   padding: 13px 16px;
   border: 1px solid rgba(188, 168, 151, 0.74);
   border-radius: 22px;

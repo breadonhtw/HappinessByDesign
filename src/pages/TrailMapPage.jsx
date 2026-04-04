@@ -105,6 +105,45 @@ function formatFloorBadge(floor) {
   return floor?.replace("Level ", "L") ?? "";
 }
 
+function StationStandPhoto({ stop }) {
+  const [imageStatus, setImageStatus] = useState(
+    stop.standPhotoSrc ? "loading" : "missing",
+  );
+
+  if (!stop.standPhotoSrc || imageStatus === "error") {
+    return null;
+  }
+
+  return (
+    <div
+      className="trail-map-summary__photo"
+      data-image-status={imageStatus}
+    >
+      <div className="vt-eyebrow trail-map-summary__photo-eyebrow">
+        Look for this stand
+      </div>
+      <figure className="trail-map-summary__photo-frame">
+        <div className="trail-map-summary__photo-stage">
+          <img
+            src={stop.standPhotoSrc}
+            alt={stop.standPhotoAlt}
+            className="trail-map-summary__photo-image"
+            loading="lazy"
+            decoding="async"
+            onLoad={() => setImageStatus("loaded")}
+            onError={() => setImageStatus("error")}
+          />
+        </div>
+        {stop.standPhotoCaption ? (
+          <figcaption className="trail-map-summary__photo-caption">
+            {stop.standPhotoCaption}
+          </figcaption>
+        ) : null}
+      </figure>
+    </div>
+  );
+}
+
 function MapPin({ stop, isActive, onSelect }) {
   const { x, y } = stop.mapPosition;
   const dy = isActive ? -5 : 0;
@@ -395,6 +434,12 @@ export default function TrailMapPage() {
                 </div>
               </div>
             ) : null}
+            {activeStop ? (
+              <StationStandPhoto
+                key={activeStop.standPhotoSrc || activeStop.id}
+                stop={activeStop}
+              />
+            ) : null}
             {googleMapsUrl ? (
               <a
                 className="trail-map-summary__maps-link"
@@ -414,6 +459,11 @@ export default function TrailMapPage() {
                   ↗
                 </span>
               </a>
+            ) : null}
+            {activeStop ? (
+              <div className="trail-map-summary__scroll-hint" aria-hidden="true">
+                Scroll down to find the other stations
+              </div>
             ) : null}
           </div>
         </div>
