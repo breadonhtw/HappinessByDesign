@@ -104,9 +104,32 @@ describe("TapCard option emphasis", () => {
         name: /^Choose Option A: Join the potluck\. Head downstairs and talk to people over dinner\.$/i,
       }),
     );
+
+    expect(screen.getByText("Select your age range")).toBeTruthy();
+    expect(
+      screen.getByRole("group", { name: "Select your age range" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Age range is anonymous and can be skipped."),
+    ).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Select age range 25-34" }),
+    );
+
+    const selectedAgeButton = screen.getByRole("button", {
+      name: "Select age range 25-34",
+    });
+
+    expect(selectedAgeButton.getAttribute("data-selected")).toBe("true");
+    expect(screen.getByText("✓")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Submit response" }));
 
-    expect(handleSubmitResponse).toHaveBeenCalledWith({ choice: "a" });
+    expect(handleSubmitResponse).toHaveBeenCalledWith({
+      choice: "a",
+      ageRange: "25-34",
+      otherText: undefined,
+    });
   });
 
   it("requires written text before submitting Other", () => {

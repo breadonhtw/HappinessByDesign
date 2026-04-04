@@ -443,9 +443,13 @@
 }
 
 .tap-card__age-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   min-height: 34px;
   padding: 7px 12px;
   border-color: rgba(203, 178, 149, 0.54);
+  background: rgba(255, 252, 247, 0.84);
   cursor: pointer;
   transition:
     transform 0.18s ease,
@@ -460,11 +464,37 @@
   font-weight: 700;
 }
 
+.tap-card__age-selected-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 252, 247, 0.98);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
 .tap-card__age-button[data-selected="true"] {
-  border-color: rgba(138, 90, 68, 0.4);
-  background: rgba(138, 90, 68, 0.12);
-  box-shadow: 0 10px 18px rgba(62, 34, 24, 0.08);
-  transform: translateY(-1px);
+  border-color: rgba(138, 90, 68, 0.72);
+  background: linear-gradient(180deg, rgba(138, 90, 68, 0.88), rgba(111, 53, 39, 0.96));
+  box-shadow:
+    0 12px 22px rgba(62, 34, 24, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.tap-card__age-button[data-selected="true"] span {
+  color: rgba(255, 252, 247, 0.98);
+}
+
+.tap-card__age-button:focus-visible {
+  outline: 2px solid rgba(115, 141, 94, 0.34);
+  outline-offset: 2px;
 }
 
 .tap-card__survey-textarea {

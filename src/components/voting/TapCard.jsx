@@ -273,8 +273,12 @@ function TapCard({ scenario, submitting = false, onSubmitResponse, onChoiceInten
               </div>
 
               <div className="tap-card__survey-section">
-                <div className="tap-card__survey-label">Optional age range</div>
-                <div className="tap-card__age-grid" role="group" aria-label="Optional age range">
+                <div className="tap-card__survey-label">Select your age range</div>
+                <div
+                  className="tap-card__age-grid"
+                  role="group"
+                  aria-label="Select your age range"
+                >
                   {AGE_RANGE_OPTIONS.map((option) => (
                     <button
                       key={option.value}
@@ -285,6 +289,14 @@ function TapCard({ scenario, submitting = false, onSubmitResponse, onChoiceInten
                       aria-pressed={ageRange === option.value}
                       aria-label={`Select age range ${option.label}`}
                     >
+                      {ageRange === option.value ? (
+                        <span
+                          aria-hidden="true"
+                          className="tap-card__age-selected-icon"
+                        >
+                          ✓
+                        </span>
+                      ) : null}
                       <span>{option.label}</span>
                     </button>
                   ))}
@@ -313,7 +325,7 @@ function TapCard({ scenario, submitting = false, onSubmitResponse, onChoiceInten
               ) : null}
 
               <p className="tap-card__survey-note">
-                Age range is optional and anonymous.
+                Age range is anonymous and can be skipped.
                 {selectedChoice === "other"
                   ? " Your written response is required for this option."
                   : ""}
