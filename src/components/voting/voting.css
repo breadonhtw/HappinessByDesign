@@ -631,17 +631,32 @@
 .tap-option__label {
   margin-bottom: 2px;
   color: var(--option-color);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   transition:
     opacity 0.2s ease,
     transform 0.2s ease,
     color 0.2s ease;
 }
 
-.tap-option__text {
+.tap-option__title {
+  margin-bottom: 4px;
   color: var(--color-text);
-  font-size: 14px;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.35;
+  transform-origin: left center;
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.tap-option__text {
+  color: var(--color-text-soft);
+  font-size: 13px;
   line-height: 1.5;
   transform-origin: left center;
   transition:
@@ -711,8 +726,14 @@
 
 .tap-option:active:not(:disabled) .tap-option__text,
 .tap-option:not(:disabled):focus-visible .tap-option__text {
+  color: var(--color-text);
+  transform: scale(1.02);
+}
+
+.tap-option:active:not(:disabled) .tap-option__title,
+.tap-option:not(:disabled):focus-visible .tap-option__title {
   color: var(--option-color);
-  transform: scale(1.06);
+  transform: scale(1.03);
 }
 
 .tap-option:active:not(:disabled) .tap-option__indicator,
@@ -763,8 +784,13 @@
   }
 
   .tap-option:not(:disabled):hover .tap-option__text {
+    color: var(--color-text);
+    transform: scale(1.02);
+  }
+
+  .tap-option:not(:disabled):hover .tap-option__title {
     color: var(--option-color);
-    transform: scale(1.06);
+    transform: scale(1.03);
   }
 
   .tap-option:not(:disabled):hover .tap-option__indicator {

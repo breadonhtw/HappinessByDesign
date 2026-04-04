@@ -19,13 +19,13 @@ describe("TapCard option emphasis", () => {
     );
 
     const optionA = screen.getByRole("button", {
-      name: /^Choose Option A: Join the game, have fun, and meet someone new$/i,
+      name: /^Choose Option A: Meet someone new\. Say yes, join the game, and start interacting\.$/i,
     });
     const optionB = screen.getByRole("button", {
-      name: /^Choose Option B: Smile, say you're busy, then head home to chill$/i,
+      name: /^Choose Option B: Keep to yourself\. Pass, say you're busy, and head home to chill\.$/i,
     });
     const optionOther = screen.getByRole("button", {
-      name: /^Choose Other: Share another response in your own words$/i,
+      name: /^Choose Other: Choose another response\. Share what you'd do instead\.$/i,
     });
 
     fireEvent.pointerEnter(optionA);
@@ -33,17 +33,20 @@ describe("TapCard option emphasis", () => {
     fireEvent.pointerEnter(optionOther);
 
     expect(handleChoiceIntent).toHaveBeenCalledTimes(3);
-    expect(screen.getByText("Join the game, have fun, and meet someone new")).toBeTruthy();
-    expect(screen.getByText("Smile, say you're busy, then head home to chill")).toBeTruthy();
-    expect(screen.getByText("Share another response in your own words")).toBeTruthy();
+    expect(screen.getByText("Meet someone new")).toBeTruthy();
+    expect(screen.getByText("Say yes, join the game, and start interacting.")).toBeTruthy();
+    expect(screen.getByText("Keep to yourself")).toBeTruthy();
+    expect(screen.getByText("Pass, say you're busy, and head home to chill.")).toBeTruthy();
+    expect(screen.getByText("Choose another response")).toBeTruthy();
+    expect(screen.getByText("Share what you'd do instead.")).toBeTruthy();
     expect(optionA.getAttribute("aria-label")).toBe(
-      "Choose Option A: Join the game, have fun, and meet someone new",
+      "Choose Option A: Meet someone new. Say yes, join the game, and start interacting.",
     );
     expect(optionB.getAttribute("aria-label")).toBe(
-      "Choose Option B: Smile, say you're busy, then head home to chill",
+      "Choose Option B: Keep to yourself. Pass, say you're busy, and head home to chill.",
     );
     expect(optionOther.getAttribute("aria-label")).toBe(
-      "Choose Other: Share another response in your own words",
+      "Choose Other: Choose another response. Share what you'd do instead.",
     );
   });
 
@@ -60,13 +63,13 @@ describe("TapCard option emphasis", () => {
     );
 
     const optionA = screen.getByRole("button", {
-      name: /^Choose Option A: Join the game, have fun, and meet someone new$/i,
+      name: /^Choose Option A: Meet someone new\. Say yes, join the game, and start interacting\.$/i,
     });
     const optionB = screen.getByRole("button", {
-      name: /^Choose Option B: Smile, say you're busy, then head home to chill$/i,
+      name: /^Choose Option B: Keep to yourself\. Pass, say you're busy, and head home to chill\.$/i,
     });
     const optionOther = screen.getByRole("button", {
-      name: /^Choose Other: Share another response in your own words$/i,
+      name: /^Choose Other: Choose another response\. Share what you'd do instead\.$/i,
     });
 
     fireEvent.click(optionA);
@@ -81,6 +84,7 @@ describe("TapCard option emphasis", () => {
     expect(optionB.getAttribute("data-selected")).toBe("true");
     expect(optionOther.getAttribute("data-selected")).toBe("false");
     expect(screen.getByText("Selected response")).toBeTruthy();
+    expect(screen.getAllByText("Keep to yourself").length).toBeGreaterThanOrEqual(2);
     expect(screen.getByRole("button", { name: "Submit response" })).toBeTruthy();
   });
 
@@ -97,7 +101,7 @@ describe("TapCard option emphasis", () => {
 
     fireEvent.click(
       screen.getByRole("button", {
-        name: /^Choose Option A: Join the monthly potluck downstairs$/i,
+        name: /^Choose Option A: Join the potluck\. Head downstairs and talk to people over dinner\.$/i,
       }),
     );
     fireEvent.click(screen.getByRole("button", { name: "Submit response" }));
@@ -118,7 +122,7 @@ describe("TapCard option emphasis", () => {
 
     fireEvent.click(
       screen.getByRole("button", {
-        name: /^Choose Other: Share another response in your own words$/i,
+        name: /^Choose Other: Choose another response\. Share what you'd do instead\.$/i,
       }),
     );
 

@@ -113,7 +113,8 @@ function TapOption({
         </div>
         <div className="tap-option__copy">
           <div className="tap-option__label">{optionLabel}</div>
-          <div className="tap-option__text">{scenarioOption.short}</div>
+          <div className="tap-option__title">{scenarioOption.label}</div>
+          <div className="tap-option__text">{scenarioOption.detail}</div>
         </div>
       </div>
 
@@ -126,20 +127,20 @@ function TapOption({
 }
 
 const OTHER_OPTION = {
-  short: "Share another response in your own words",
+  detail: "Share what you'd do instead.",
   emoji: "✍️",
-  label: "Something else",
+  label: "Choose another response",
   color: "#8A5A44",
   bg: "#F3E8DD",
 };
 
 function buildResponseSummary(selectedChoice, scenario) {
   if (selectedChoice === "a") {
-    return "Option A";
+    return scenario.optionA.label;
   }
 
   if (selectedChoice === "b") {
-    return "Option B";
+    return scenario.optionB.label;
   }
 
   return scenario.optionOther?.label || OTHER_OPTION.label;
@@ -231,7 +232,7 @@ function TapCard({ scenario, submitting = false, onSubmitResponse, onChoiceInten
               choice="a"
               scenarioOption={scenario.optionA}
               hintDelay="0s"
-              ariaLabel={`Choose Option A: ${scenario.optionA.short}`}
+              ariaLabel={`Choose Option A: ${scenario.optionA.label}. ${scenario.optionA.detail}`}
               isDisabled={isInteractionDisabled}
               isSelected={isSelectingA}
               isDimmed={selectedChoice !== null && !isSelectingA}
@@ -242,7 +243,7 @@ function TapCard({ scenario, submitting = false, onSubmitResponse, onChoiceInten
               choice="b"
               scenarioOption={scenario.optionB}
               hintDelay="0.45s"
-              ariaLabel={`Choose Option B: ${scenario.optionB.short}`}
+              ariaLabel={`Choose Option B: ${scenario.optionB.label}. ${scenario.optionB.detail}`}
               isDisabled={isInteractionDisabled}
               isSelected={isSelectingB}
               isDimmed={selectedChoice !== null && !isSelectingB}
@@ -253,7 +254,7 @@ function TapCard({ scenario, submitting = false, onSubmitResponse, onChoiceInten
               choice="other"
               scenarioOption={optionOther}
               hintDelay="0.9s"
-              ariaLabel={`Choose Other: ${optionOther.short}`}
+              ariaLabel={`Choose Other: ${optionOther.label}. ${optionOther.detail}`}
               isDisabled={isInteractionDisabled}
               isSelected={isSelectingOther}
               isDimmed={selectedChoice !== null && !isSelectingOther}
